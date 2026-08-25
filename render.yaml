@@ -1,0 +1,10 @@
+services:
+  - type: web
+    runtime: static
+    name: detailerz
+    buildCommand: cd app && npm ci && npm --prefix web ci && npm run build
+    staticPublishPath: dist/apps/web
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
