@@ -74,7 +74,7 @@ const SCENES = [
     {
         id: 'scene-6',
         title: 'Your Vehicle. Transformed.',
-        subtitle: 'Experience the benchmark of automotive detailing in Phoenix, Arizona',
+        subtitle: 'Experience the benchmark of mobile automotive detailing in Southwestern Ontario',
         image: '/promo/supercar.jpg',
         duration: 8,
         badge: 'Showroom Delivery',
@@ -249,15 +249,15 @@ export default function MarketingVideoPlayer({ autoPlay = true, className = '' }
 
     const copyPromoKit = () => {
         const promoText = `🚗✨ AKAAL DETAILERZ CO. // THE CINEMATIC DETAIL EXPERIENCE\n\n` +
-        `Is your ride looking tired? Experience the ultimate automotive transformation in Phoenix, AZ.\n\n` +
+        `Is your ride looking tired? Experience the ultimate automotive transformation at your home or workplace.\n\n` +
         `🔥 2-Bucket Hand Foam Decontamination\n` +
         `💎 2-Stage Multi-Pad Paint Correction (90%+ Swirl Removal)\n` +
         `🛡️ 5-Year 9H Ceramic Hydrophobic Shield\n` +
         `🧼 VIP Deep Steam Interior Extraction & Leather Conditioning\n\n` +
-        `📍 2417 W Gardenia Ave, Phoenix, AZ 85021\n` +
-        `📞 Call: (602) 555-0184\n` +
+        `📍 Serving ${BUSINESS.serviceArea}\n` +
+        `📞 Call: ${BUSINESS.phone}\n` +
         `🌐 Book Online: https://akaaldetailerz.com\n\n` +
-        `#CarDetailing #PaintCorrection #CeramicCoating #AutoDetailingPhoenix #AkaalDetailerz #ExoticCarDetail`;
+        `#CarDetailing #PaintCorrection #CeramicCoating #MobileDetailing #AkaalDetailerz`;
 
         navigator.clipboard.writeText(promoText);
         setCopied(true);
@@ -584,13 +584,13 @@ export default function MarketingVideoPlayer({ autoPlay = true, className = '' }
                             <div className="rounded-lg border border-white/10 bg-black/60 p-4 font-mono text-xs text-neutral-300">
                                 <p className="text-accent font-semibold mb-2">// Instagram & TikTok Caption</p>
                                 <p>🚗✨ AKAAL DETAILERZ CO. // THE CINEMATIC DETAIL EXPERIENCE</p>
-                                <p className="mt-1">Is your ride looking tired? Experience the ultimate automotive transformation in Phoenix, AZ.</p>
+                                <p className="mt-1">Is your ride looking tired? Experience the ultimate automotive transformation at your home or workplace.</p>
                                 <p className="mt-2">🔥 2-Bucket Hand Foam Decontamination</p>
                                 <p>💎 2-Stage Multi-Pad Paint Correction (90%+ Swirl Removal)</p>
                                 <p>🛡️ 5-Year 9H Ceramic Hydrophobic Shield</p>
                                 <p>🧼 VIP Deep Steam Interior Extraction & Leather Conditioning</p>
-                                <p className="mt-2">📍 2417 W Gardenia Ave, Phoenix, AZ 85021</p>
-                                <p>📞 Call: (602) 555-0184 · https://akaaldetailerz.com</p>
+                                <p className="mt-2">📍 Serving {BUSINESS.serviceArea}</p>
+                                <p>📞 Call: {BUSINESS.phone} · https://akaaldetailerz.com</p>
                             </div>
 
                             <div className="flex flex-wrap items-center justify-between gap-3 pt-2">

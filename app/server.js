@@ -2,9 +2,10 @@ const http = require('http');
 const fs = require('fs');
 const path = require('path');
 
-const PORT = process.env.PORT || 4000;
+const PORT = Number(process.env.PORT) || 4000;
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'shared-store.json');
+const WEB_DIR = path.join(__dirname, 'web', 'dist');
 
 const defaultState = {
   bookings: [
@@ -151,6 +152,49 @@ const sendJson = (res, statusCode, payload) => {
   res.end(JSON.stringify(payload));
 };
 
+const contentTypes = {
+  '.css': 'text/css; charset=utf-8',
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'application/javascript; charset=utf-8',
+  '.json': 'application/json; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.webp': 'image/webp',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.jpeg': 'image/jpeg',
+  '.mp4': 'video/mp4',
+};
+
+const serveWebApp = (req, res, url) => {
+  if (req.method !== 'GET' && req.method !== 'HEAD') {
+    sendJson(res, 404, { error: 'Not found' });
+    return;
+  }
+
+  const requestedPath = decodeURIComponent(url.pathname === '/' ? '/index.html' : url.pathname);
+  const filePath = path.resolve(WEB_DIR, `.${requestedPath}`);
+  const webRoot = path.resolve(WEB_DIR);
+  const isInsideWebRoot = filePath === webRoot || filePath.startsWith(`${webRoot}${path.sep}`);
+  const targetPath = isInsideWebRoot && fs.existsSync(filePath) && fs.statSync(filePath).isFile()
+    ? filePath
+    : path.join(WEB_DIR, 'index.html');
+
+  if (!fs.existsSync(targetPath)) {
+    sendJson(res, 404, { error: 'Web build not found' });
+    return;
+  }
+
+  res.writeHead(200, {
+    'Content-Type': contentTypes[path.extname(targetPath).toLowerCase()] || 'application/octet-stream',
+    'Cache-Control': targetPath.endsWith('index.html') ? 'no-cache' : 'public, max-age=31536000, immutable',
+  });
+  if (req.method === 'HEAD') {
+    res.end();
+    return;
+  }
+  fs.createReadStream(targetPath).pipe(res);
+};
+
 const server = http.createServer((req, res) => {
   if (req.method === 'OPTIONS') {
     sendJson(res, 200, { ok: true });
@@ -235,7 +279,7 @@ const server = http.createServer((req, res) => {
     }
   }
 
-  sendJson(res, 404, { error: 'Not found' });
+  serveWebApp(req, res, url);
 });
 
 server.listen(PORT, () => {

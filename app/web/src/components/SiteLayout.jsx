@@ -27,7 +27,7 @@ export function SiteLayout({
     children
 }) {
     const [open, setOpen] = useState(false);
-    const { count } = useBucket();
+    const { count, total } = useBucket();
     return <div className="min-h-screen bg-background">
     <CinematicBackgroundVideo />
         <header className="sticky top-0 z-50 bg-primary/95 backdrop-blur border-b border-white/10">
@@ -65,6 +65,12 @@ export function SiteLayout({
 
         <main>{children}</main>
 
+        {count > 0 && <Link to="/contact" aria-label={`Open checkout with ${count} selected item${count === 1 ? '' : 's'}`} className="fixed bottom-5 right-5 z-40 flex min-h-14 items-center gap-3 bg-accent px-5 font-display text-lg uppercase text-accent-foreground shadow-xl transition-transform hover:-translate-y-1">
+            <ShoppingBag className="h-5 w-5" />
+            <span>Checkout · ${total}</span>
+            <span className="flex h-6 min-w-6 items-center justify-center bg-primary px-1 text-xs text-primary-foreground">{count}</span>
+        </Link>}
+
         <footer className="border-t border-white/10 bg-primary text-primary-foreground/70">
             <div className="mx-auto grid max-w-[90rem] gap-10 px-5 py-14 md:grid-cols-[1.4fr_1fr_1fr]">
                 <div>
@@ -72,8 +78,8 @@ export function SiteLayout({
                     <p className="mt-3 max-w-sm text-sm leading-relaxed">{BUSINESS.tagline}</p>
                 </div>
                 <div className="text-sm leading-relaxed">
-                    <p className="font-display text-lg uppercase tracking-wide text-accent">Visit</p>
-                    <p className="mt-3">{BUSINESS.address}</p>
+                    <p className="font-display text-lg uppercase tracking-wide text-accent">We come to you</p>
+                    <p className="mt-3">{BUSINESS.serviceArea}</p>
                     <p className="mt-2">{BUSINESS.hours}</p>
                 </div>
                 <div className="text-sm leading-relaxed">
@@ -85,7 +91,7 @@ export function SiteLayout({
                         {BUSINESS.email}
                     </a>
                     <Link className="mt-4 inline-block font-display text-lg uppercase text-primary-foreground" to="/contact">
-                        Checkout
+                        Request a visit
                     </Link>
                 </div>
             </div>

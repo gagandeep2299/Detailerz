@@ -9,7 +9,7 @@ export default function GalleryPage() {
         <SiteLayout>
             <Helmet>
                 <title>Gallery & Reviews | Akaal Detailerz Co.</title>
-                <meta name="description" content="Before and after photos of car detailing, paint correction and ceramic coating work, plus reviews from Phoenix clients." />
+                <meta name="description" content="Before and after photos of mobile car detailing, paint correction, and ceramic coating work across Southwestern Ontario." />
             </Helmet>
 
             <section className="bg-primary px-5 py-20 text-primary-foreground md:py-24">

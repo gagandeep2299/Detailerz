@@ -1,6 +1,6 @@
 const STORAGE_KEY = 'detailerz-bookings';
 const EMPLOYEE_STORAGE_KEY = 'detailerz-employees';
-const SHARED_SERVER_URL = 'http://localhost:4000';
+const SHARED_SERVER_URL = '';
 const SHARED_SYNC_INTERVAL_MS = 2000;
 
 const normalizeEmail = (value = '') => String(value || '').trim().toLowerCase();
@@ -406,6 +406,8 @@ const normalizeBooking = (input) => {
         email,
         phone,
         vehicle: input.vehicle || 'Unknown vehicle',
+        service_address: input.service_address || '',
+        access_notes: input.access_notes || '',
         package: input.package || input.service || 'General detail',
         preferred_date: date,
         status,
@@ -722,7 +724,7 @@ export const inMemoryDb = {
 
     exportCsv() {
         const rows = this.getBookings();
-        const headers = ['id', 'customerId', 'name', 'email', 'phone', 'vehicle', 'package', 'preferred_date', 'status', 'amount', 'created'];
+        const headers = ['id', 'customerId', 'name', 'email', 'phone', 'vehicle', 'service_address', 'access_notes', 'package', 'preferred_date', 'status', 'amount', 'created'];
         const escapeCsvValue = (value) => {
             const safe = String(value ?? '').replace(/"/g, '""');
             return `"${safe}"`;

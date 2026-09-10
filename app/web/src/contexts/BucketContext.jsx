@@ -9,7 +9,24 @@ const readSessionItems = () => {
 
     try {
         const parsed = JSON.parse(window.sessionStorage.getItem(STORAGE_KEY) || '[]');
-        return Array.isArray(parsed) ? parsed : [];
+        if (!Array.isArray(parsed)) return [];
+
+        const migrated = parsed.map((item) => {
+            if (item.category || (item.kind !== 'package' && item.kind !== 'bundle')) return item;
+            return {
+                ...item,
+                category: item.kind === 'bundle'
+                    ? 'bundle'
+                    : item.service === 'Interior Cleaning' ? 'interior' : 'exterior',
+            };
+        });
+
+        return migrated.reduce((items, item) => {
+            if (item.kind === 'package' || item.kind === 'bundle') {
+                return [...items.filter((entry) => !(entry.kind === item.kind && entry.category === item.category)), { ...item, qty: 1 }];
+            }
+            return [...items, item];
+        }, []);
     } catch {
         return [];
     }
@@ -20,11 +37,12 @@ const writeSessionItems = (items) => {
     window.sessionStorage.setItem(STORAGE_KEY, JSON.stringify(items));
 };
 
-export const makeBucketItem = ({ kind, name, price, service = '', time = '', desc = '' }) => ({
+export const makeBucketItem = ({ kind, name, price, service = '', time = '', desc = '', category = '' }) => ({
     id: [kind, service, name].filter(Boolean).join('|').toLowerCase(),
     kind,
     name,
     service,
+    category,
     time,
     desc,
     price: Number(price || 0),
@@ -45,6 +63,13 @@ export const BucketProvider = ({ children }) => {
         if (!item?.id) return;
 
         commit((current) => {
+            if (item.kind === 'package' || item.kind === 'bundle') {
+                const sameCategory = current.find((entry) => entry.kind === item.kind && entry.category === item.category);
+                if (sameCategory) {
+                    return current.map((entry) => entry.id === sameCategory.id ? { ...item, qty: 1 } : entry);
+                }
+            }
+
             const existing = current.find((entry) => entry.id === item.id);
             if (existing) {
                 return current.map((entry) => (
@@ -64,7 +89,9 @@ export const BucketProvider = ({ children }) => {
     const updateQty = useCallback((id, qty) => {
         const nextQty = Math.max(0, Number(qty || 0));
         commit((current) => current
-            .map((item) => (item.id === id ? { ...item, qty: nextQty } : item))
+            .map((item) => (item.id === id
+                ? { ...item, qty: item.kind === 'package' || item.kind === 'bundle' ? 1 : nextQty }
+                : item))
             .filter((item) => item.qty > 0));
     }, [commit]);
 

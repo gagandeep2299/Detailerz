@@ -21,7 +21,7 @@ const MARKETING_BENEFITS = [
     {
         icon: ShieldCheck,
         title: 'Certified 5-Year Ceramic',
-        desc: 'Our 9H quartz coatings cross-link with paint on a molecular level, offering impenetrable chemical resistance, extreme hydrophobic water contact, and UV defense against Phoenix heat.',
+        desc: 'Our 9H quartz coatings cross-link with paint on a molecular level, offering strong chemical resistance, extreme hydrophobic water contact, and UV defense for Ontario roads.',
     },
     {
         icon: Sparkles,
@@ -38,19 +38,19 @@ const MARKETING_BENEFITS = [
 const AD_HOOKS = [
     {
         platform: 'Instagram Reel & TikTok',
-        hook: 'POV: Your car gets the 2-stage paint correction it deserves in Phoenix.',
+        hook: 'POV: Your car gets the 2-stage paint correction it deserves at home in Southwestern Ontario.',
         caption: 'Watch swirl marks disappear under high-CRI inspection lighting! 💎 Full decontamination, dual-action Rupes polish & 5-year ceramic coating.',
         tag: 'Viral Reel Hook',
     },
     {
         platform: 'Facebook & YouTube Ad',
         hook: 'Tired of automated car washes scratching your paint?',
-        caption: 'Meet Akaal Detailerz Co. — Phoenix’s premier hand detailing shop. No shortcuts, no rushed jobs. Hand-crafted detailing that outlasts the road.',
+        caption: 'Meet Akaal Detailerz Co. — Southwestern Ontario’s mobile hand detailing team. We come to your driveway or workplace with no shortcuts and no rushed jobs.',
         tag: 'Conversion Ad',
     },
     {
         platform: 'Google Business / Local Campaign',
-        hook: 'Top-Rated Auto Detailing & Ceramic Coatings in Phoenix, AZ',
+        hook: 'Mobile Auto Detailing & Ceramic Coatings in Southwestern Ontario',
         caption: '5-star rated, fully licensed & insured. Book online in 60 seconds with instant confirmation.',
         tag: 'Local SEO Spotlight',
     },
@@ -70,7 +70,7 @@ export default function MarketingPage() {
         <SiteLayout>
             <Helmet>
                 <title>Marketing Brand Film & Promo Reel | Akaal Detailerz Co.</title>
-                <meta name="description" content="Watch our 4K cinematic marketing film showcasing hand wash, multi-stage paint correction, and 5-year ceramic coating services in Phoenix, AZ." />
+                <meta name="description" content="Watch our cinematic marketing film showcasing mobile hand wash, multi-stage paint correction, and ceramic coating services across Southwestern Ontario." />
             </Helmet>
 
             {/* Hero Section */}
@@ -92,7 +92,7 @@ export default function MarketingPage() {
 
                         <Reveal delay={0.15}>
                             <p className="mt-5 max-w-2xl text-base leading-relaxed text-primary-foreground/75 sm:text-lg">
-                                Take a cinematic look inside our Phoenix studio. From active snow foam decontamination to 2-stage paint jewel correction and 5-year ceramic coatings.
+                                Take a cinematic look at our mobile process. From active snow foam decontamination to 2-stage paint jewel correction and ceramic coatings, we work at your location.
                             </p>
                         </Reveal>
                     </div>
@@ -207,7 +207,7 @@ export default function MarketingPage() {
 
                                 <button
                                     type="button"
-                                    onClick={() => handleCopyHook(`${AD_HOOKS[activeHookTab].hook}\n\n${AD_HOOKS[activeHookTab].caption}\n\n📍 ${BUSINESS.address}\n📞 ${BUSINESS.phone}`, activeHookTab)}
+                                    onClick={() => handleCopyHook(`${AD_HOOKS[activeHookTab].hook}\n\n${AD_HOOKS[activeHookTab].caption}\n\n📍 Serving ${BUSINESS.serviceArea}\n📞 ${BUSINESS.phone}`, activeHookTab)}
                                     className="flex items-center gap-2 rounded bg-accent px-4 py-2 font-display text-sm uppercase text-accent-foreground transition hover:bg-amber-400"
                                 >
                                     {copiedIndex === activeHookTab ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}

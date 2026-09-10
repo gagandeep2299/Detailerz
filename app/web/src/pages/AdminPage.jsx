@@ -278,6 +278,7 @@ export default function AdminPage() {
                                                     <CarFront className="h-4 w-4 text-accent" />
                                                     {record.vehicle}
                                                 </div>
+                                                {record.service_address && <p className="mt-2 max-w-[220px] text-xs text-muted-foreground">{record.service_address}</p>}
                                             </td>
                                             <td className="px-5 py-4 text-foreground">{record.package}</td>
                                             <td className="px-5 py-4">

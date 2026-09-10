@@ -51,13 +51,13 @@ export default function ServicesPage() {
         <SiteLayout>
             <Helmet>
                 <title>Services & Pricing | Akaal Detailerz Co.</title>
-                <meta name="description" content="Car wash, interior deep cleaning, paint correction, headlight restoration and ceramic coating packages with clear pricing in Phoenix, AZ." />
+                <meta name="description" content="Mobile car detailing packages brought to your home or workplace across Kitchener, Cambridge, Guelph, Waterloo, Ayr, Woodstock, and Brantford." />
             </Helmet>
 
             <section className="px-5 pb-12 pt-16 text-center md:pb-16 md:pt-20">
                 <div className="mx-auto max-w-[72rem]">
                     <h1 className="font-display text-5xl uppercase leading-none sm:text-6xl">Our services</h1>
-                    <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground sm:text-lg">Premium detailing solutions designed to restore, protect, and enhance your vehicle inside and out.</p>
+                    <p className="mx-auto mt-4 max-w-3xl text-base leading-relaxed text-muted-foreground sm:text-lg">Premium detailing solutions delivered at your home, office, or other convenient location across Southwestern Ontario.</p>
                 </div>
             </section>
 
@@ -98,7 +98,7 @@ export default function ServicesPage() {
                                         ))}
                                     </ul>
                                     <AddToBucketButton
-                                        item={makeBucketItem({ kind: 'bundle', name: `${p.name} package`, price: p.price, desc: p.blurb })}
+                                        item={makeBucketItem({ kind: 'bundle', name: `${p.name} package`, price: p.price, desc: p.blurb, category: 'bundle' })}
                                         className="mt-6 flex min-h-[48px] items-center justify-center bg-primary font-display text-lg uppercase text-primary-foreground transition-transform active:scale-[0.98]"
                                     >
                                         Add to bucket
@@ -141,6 +141,7 @@ export default function ServicesPage() {
                                             service: selectedService.name,
                                             time: servicePackage.time,
                                             desc: servicePackage.desc,
+                                            category: selectedService.name === 'Interior Cleaning' ? 'interior' : 'exterior',
                                         })}
                                         className="mt-6 flex min-h-[46px] items-center justify-center bg-primary font-display text-base uppercase text-primary-foreground"
                                     >

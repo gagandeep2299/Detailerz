@@ -66,17 +66,17 @@ export default function HomePage() {
 
   return <SiteLayout>
             <Helmet>
-                <title>Akaal Detailerz Co. | Car Wash & Auto Detailing in Phoenix</title>
-                <meta name="description" content="Hand car washing, paint correction, interior deep cleaning and 5-year ceramic coatings in Phoenix, Arizona. Book your detail online." />
+                <title>Akaal Detailerz Co. | Mobile Auto Detailing in Southwestern Ontario</title>
+                <meta name="description" content="Mobile car detailing brought to your home or workplace in Kitchener, Cambridge, Guelph, Waterloo, Ayr, Woodstock, and Brantford." />
             </Helmet>
 
             {/* Hero */}
             <section className="relative flex min-h-[100dvh] items-end bg-primary">
-                <img src={IMAGES.hero} alt="Black sedan covered in foam inside a detailing bay" className="absolute inset-0 h-full w-full object-cover opacity-60" />
+                <img src={IMAGES.hero} alt="Black sedan receiving a professional mobile detail" className="absolute inset-0 h-full w-full object-cover opacity-60" />
                 <div className="absolute inset-0 bg-gradient-to-t from-primary via-primary/70 to-primary/20" />
                 <div className="relative mx-auto w-full max-w-[90rem] px-5 pb-16 pt-32">
                     <Reveal>
-                        <p className="font-display text-sm uppercase tracking-[0.45em] text-accent">Phoenix, Arizona</p>
+                            <p className="font-display text-sm uppercase tracking-[0.45em] text-accent">Mobile detailing · Southwestern Ontario</p>
                     </Reveal>
                     <Reveal delay={0.08}>
                         <h1 className="mt-4 max-w-4xl font-display text-6xl uppercase leading-[0.92] text-primary-foreground sm:text-7xl lg:text-8xl">
@@ -89,7 +89,7 @@ export default function HomePage() {
                         </h1>
                     </Reveal>
                     <Reveal delay={0.16}>
-                        <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/75">Hand washing, Interior cleaning and ceramic coating done by two people who have been doing it for three years. No conveyor, no spinning brushes, no rushed jobs.</p>
+                        <p className="mt-6 max-w-xl text-base leading-relaxed text-primary-foreground/75">We bring hand washing, interior cleaning, paint correction, and ceramic coating to your driveway or workplace. No shop drop-off, no conveyor, no rushed jobs.</p>
                     </Reveal>
                     <Reveal delay={0.24}>
                         <div className="mt-9 flex flex-wrap items-center gap-4">
@@ -127,7 +127,7 @@ export default function HomePage() {
                         <div>
                             <p className="font-display text-sm uppercase tracking-[0.35em] text-muted-foreground">The Standard</p>
                             <h2 className="mt-4 font-display text-4xl uppercase leading-tight sm:text-5xl">Obsessive care for every finish</h2>
-                            <p className="mt-5 text-muted-foreground leading-relaxed">We treat every vehicle as a long-term investment. From precision hand washes to multi-stage paint correction and ceramic coatings, our meticulous process delivers unmatched depth, clarity, and protection.</p>
+                            <p className="mt-5 text-muted-foreground leading-relaxed">We treat every vehicle as a long-term investment and bring our meticulous process to you. From precision hand washes to multi-stage paint correction and ceramic coatings, we deliver depth, clarity, and protection at your location.</p>
                             <dl className="mt-8 grid grid-cols-3 divide-x divide-border border-y border-border">
                                 {[{
                 v: 2400,
@@ -209,6 +209,7 @@ export default function HomePage() {
                                                         service: selectedService.name,
                                                         time: servicePackage.time,
                                                         desc: servicePackage.desc,
+                                                        category: selectedService.name === 'Interior Cleaning' ? 'interior' : 'exterior',
                                                     })}
                                                     className="mt-6 flex min-h-[46px] items-center justify-center bg-primary font-display text-base uppercase text-primary-foreground"
                                                 >
@@ -313,7 +314,7 @@ export default function HomePage() {
                                             </li>)}
                                     </ul>
                                     <AddToBucketButton
-                                        item={makeBucketItem({ kind: 'bundle', name: `${p.name} package`, price: p.price, desc: p.blurb })}
+                                        item={makeBucketItem({ kind: 'bundle', name: `${p.name} package`, price: p.price, desc: p.blurb, category: 'bundle' })}
                                         className={`mt-7 flex min-h-[48px] items-center justify-center font-display text-lg uppercase transition-transform active:scale-[0.98] ${p.featured ? 'bg-accent text-accent-foreground' : 'border border-primary-foreground/30 hover:bg-primary-foreground/10'}`}
                                     >
                                         Add {p.name}
@@ -347,7 +348,7 @@ export default function HomePage() {
                 <div className="mx-auto flex max-w-[72rem] flex-col items-start gap-6 px-5 md:flex-row md:items-center md:justify-between">
                     <div>
                         <h2 className="font-display text-4xl uppercase">Ready when you are</h2>
-                        <p className="mt-2 text-muted-foreground">{BUSINESS.hours} · {BUSINESS.address}</p>
+                        <p className="mt-2 text-muted-foreground">{BUSINESS.hours} · We serve {BUSINESS.serviceArea}</p>
                     </div>
                     <div className="flex flex-wrap gap-4">
                         <span className="flex items-center gap-2 text-sm text-muted-foreground"><ShieldCheck className="h-4 w-4 text-accent" /> Insured & licensed</span>

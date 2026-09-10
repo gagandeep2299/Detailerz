@@ -216,6 +216,8 @@ export default function EmployeePage() {
 
                             <div className="grid gap-3 text-sm text-muted-foreground md:grid-cols-2">
                                 <div><span className="font-display uppercase tracking-[0.2em] text-foreground">Vehicle</span><p className="mt-1">{currentOrder.vehicle}</p></div>
+                                <div><span className="font-display uppercase tracking-[0.2em] text-foreground">Service address</span><p className="mt-1">{currentOrder.service_address || 'Not provided'}</p></div>
+                                <div><span className="font-display uppercase tracking-[0.2em] text-foreground">Access notes</span><p className="mt-1">{currentOrder.access_notes || 'None'}</p></div>
                                 <div><span className="font-display uppercase tracking-[0.2em] text-foreground">Package</span><p className="mt-1">{currentOrder.package}</p></div>
                                 <div><span className="font-display uppercase tracking-[0.2em] text-foreground">Phone</span><p className="mt-1">{currentOrder.phone}</p></div>
                                 <div><span className="font-display uppercase tracking-[0.2em] text-foreground">Email</span><p className="mt-1 break-all">{currentOrder.email}</p></div>

@@ -1,11 +1,14 @@
 export const BUSINESS = {
     name: 'Akaal Detailerz Co.',
-    tagline: 'Paint correction, ceramic coating and hand detailing in Phoenix, AZ.',
-    phone: '(602) 555-0184',
-    email: 'hello@akaaldetailerz.com',
-    address: '2417 W Gardenia Ave, Phoenix, AZ 85021',
+    tagline: 'Professional mobile detailing brought to your driveway, home, or workplace across Southwestern Ontario.',
+    phone: '(705) 790-1054',
+    email: 'azaaldetailerz13@gmail.com',
+    address: 'Serving Kitchener, Cambridge, Guelph, Waterloo, Ayr, Woodstock, and Brantford',
+    serviceArea: 'Kitchener, Cambridge, Guelph, Waterloo, Ayr, Woodstock, and Brantford, Ontario',
     hours: 'Mon–Fri 8am–6pm · Sat 9am–4pm · Sun closed',
 };
+
+export const SERVICE_LOCATIONS = ['Kitchener', 'Cambridge', 'Guelph', 'Waterloo', 'Ayr', 'Woodstock', 'Brantford'];
 
 export const IMAGES = {
     hero: 'https://images.hostinger.com/b3d75ad7-b23f-4702-9529-09d21151b0d7.png',
@@ -24,14 +27,14 @@ export const SERVICES = [
         price: 45,
         time: '45 min',
         icon: 'cabin',
-        desc: "Transform your vehicle's interior with deep cleaning that removes stains, odors, dust, and everyday buildup.",
+        desc: "We bring deep interior cleaning to your driveway, removing stains, odors, dust, and everyday buildup.",
     },
     {
         name: 'Showroom Exterior Finish',
         price: 149,
         time: '3 hrs',
         icon: 'exterior',
-        desc: 'Bring back a brilliant shine with expert washing, paint-safe cleaning, and protective finishing treatments with Decontamination Wash.',
+        desc: 'We bring a brilliant shine to your home or workplace with paint-safe washing and protective finishing treatments.',
     },
     {
         name: 'Paint Correction',

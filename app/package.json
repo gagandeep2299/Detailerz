@@ -6,7 +6,7 @@
     "setup": "npm install --prefix web",
     "dev": "npm --prefix web run dev",
     "build": "npm --prefix web run build",
-    "start": "npm --prefix web run start",
+    "start": "node server.js",
     "lint": "npm --prefix web run lint"
   }
 }
