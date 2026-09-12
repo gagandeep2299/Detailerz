@@ -5,7 +5,7 @@
   "scripts": {
     "setup": "npm install --prefix web",
     "dev": "npm --prefix web run dev",
-    "build": "npm --prefix web run build",
+    "build": "npm --prefix web ci --include=dev && npm --prefix web run build",
     "start": "node server.js",
     "lint": "npm --prefix web run lint"
   }
