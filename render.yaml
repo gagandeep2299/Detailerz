@@ -1,10 +1,10 @@
 services:
   - type: web
-    runtime: static
+    runtime: node
     name: detailerz
     buildCommand: cd app && npm ci && npm --prefix web ci && npm run build
-    staticPublishPath: app/web/dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    startCommand: cd app && npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
