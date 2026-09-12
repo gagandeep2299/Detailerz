@@ -38,7 +38,7 @@ const SCENES = [
         title: 'Two-Stage Paint Correction',
         subtitle: 'Eliminating 90%+ of swirls, wash marring & micro-scratches',
         image: '/promo/paint_polish.jpg',
-        beforeImage: 'https://images.hostinger.com/0be72380-2bd9-4c62-bcfc-23f3a21e0af1.png',
+        beforeImage: '/images/before.png',
         duration: 8,
         badge: 'Precision Correction',
         voiceover: 'Under high-CRI studio lighting, dual-action machine polishers level the clear coat to mirror-flat optical clarity.',

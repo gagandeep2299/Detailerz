@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import { Armchair, ArrowRight, CarFront, CircleGauge, Clock, Lightbulb, Paintbrush, PawPrint, Play, Plus, ShieldCheck, SprayCan, Sparkles, Truck, UsersRound, Video, Wind, X } from 'lucide-react';
+import { Armchair, ArrowRight, CarFront, CircleGauge, Clock, Lightbulb, Paintbrush, PawPrint, Play, Plus, ShieldCheck, ShoppingBag, SprayCan, Sparkles, Truck, UsersRound, Video, Wind, X } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 import CountUp from '../components/CountUp';
 import SiteLayout from '../components/SiteLayout';
 import MarketingVideoPlayer from '../components/MarketingVideoPlayer';
 import AddToBucketButton from '../components/AddToBucketButton';
+import EnquiryDialog from '../components/EnquiryDialog';
 import { makeBucketItem } from '../contexts/BucketContext';
 import { BUSINESS, IMAGES, PACKAGES, SERVICES, SERVICE_ADDONS, SERVICE_PACKAGES, TESTIMONIALS } from '../data/site';
 const serviceIcons = {
@@ -39,6 +40,7 @@ function Ticker() {
 }
 export default function HomePage() {
     const [selectedService, setSelectedService] = useState(null);
+    const [enquiryOpen, setEnquiryOpen] = useState(false);
     const getPackages = (service) => SERVICE_PACKAGES[service.name] || [
         {
             name: 'Essential',
@@ -187,9 +189,14 @@ export default function HomePage() {
                                             <h2 id="home-service-dialog-title" className="mt-2 font-display text-4xl uppercase">{selectedService.name}</h2>
                                             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{selectedService.desc}</p>
                                         </div>
-                                        <button type="button" onClick={() => setSelectedService(null)} aria-label="Close package options" className="shrink-0 border border-border p-2 text-muted-foreground transition hover:text-foreground">
-                                            <X className="h-5 w-5" />
-                                        </button>
+                                        <div className="flex shrink-0 items-start gap-2">
+                                            <button type="button" onClick={() => setEnquiryOpen(true)} className="flex min-h-10 items-center bg-accent px-3 font-display text-xs uppercase text-accent-foreground">
+                                                Enquiry
+                                            </button>
+                                            <button type="button" onClick={() => setSelectedService(null)} aria-label="Close package options" className="border border-border p-2 text-muted-foreground transition hover:text-foreground">
+                                                <X className="h-5 w-5" />
+                                            </button>
+                                        </div>
                                     </div>
                                     <div className="mt-8 grid gap-5 md:grid-cols-3">
                                         {getPackages(selectedService).map((servicePackage) => (
@@ -201,20 +208,25 @@ export default function HomePage() {
                                                 <ul className="mt-5 flex-1 space-y-2 text-sm text-muted-foreground">
                                                     {servicePackage.features.map((feature) => <li key={feature} className="border-b border-border pb-2">{feature}</li>)}
                                                 </ul>
-                                                <AddToBucketButton
-                                                    item={makeBucketItem({
-                                                        kind: 'package',
-                                                        name: servicePackage.name,
-                                                        price: servicePackage.price,
-                                                        service: selectedService.name,
-                                                        time: servicePackage.time,
-                                                        desc: servicePackage.desc,
-                                                        category: selectedService.name === 'Interior Cleaning' ? 'interior' : 'exterior',
-                                                    })}
-                                                    className="mt-6 flex min-h-[46px] items-center justify-center bg-primary font-display text-base uppercase text-primary-foreground"
-                                                >
-                                                    Add to bucket
-                                                </AddToBucketButton>
+                                                <div className="mt-6 flex w-full items-center gap-2">
+                                                    <AddToBucketButton
+                                                        item={makeBucketItem({
+                                                            kind: 'package',
+                                                            name: servicePackage.name,
+                                                            price: servicePackage.price,
+                                                            service: selectedService.name,
+                                                            time: servicePackage.time,
+                                                            desc: servicePackage.desc,
+                                                            category: selectedService.name === 'Interior Cleaning' ? 'interior' : 'exterior',
+                                                        })}
+                                                        className="flex min-h-[40px] min-w-0 flex-1 items-center justify-center bg-primary px-3 font-display text-sm uppercase text-primary-foreground"
+                                                    >
+                                                        Add to bucket
+                                                    </AddToBucketButton>
+                                                    <Link to="/contact" aria-label="Checkout" title="Checkout" className="flex h-10 w-10 shrink-0 items-center justify-center bg-accent text-accent-foreground">
+                                                        <ShoppingBag aria-hidden="true" className="h-4 w-4" />
+                                                    </Link>
+                                                </div>
                                             </div>
                                         ))}
                                     </div>
@@ -246,7 +258,7 @@ export default function HomePage() {
                                                                                                     service: selectedService.name,
                                                                                                     desc: addon.desc,
                                                                                                 })}
-                                                                                                className="flex min-h-[40px] items-center justify-center border border-primary bg-transparent font-display text-sm uppercase text-primary"
+                                                                                                className="flex min-h-[36px] w-fit self-center items-center justify-center border border-primary bg-transparent px-3 font-display text-xs uppercase text-primary"
                                                                                             >
                                                                                                 Add addon
                                                                                             </AddToBucketButton>
@@ -258,6 +270,8 @@ export default function HomePage() {
                                 </div>
                             </div>
                         )}
+
+                        {enquiryOpen && selectedService && <EnquiryDialog service={selectedService.name} onClose={() => setEnquiryOpen(false)} />}
 
             {/* Before / after */}
             <section className="mx-auto max-w-[90rem] px-5 py-20 md:py-28">

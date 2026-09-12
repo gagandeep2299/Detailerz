@@ -5,20 +5,20 @@ export const BUSINESS = {
     email: 'azaaldetailerz13@gmail.com',
     address: 'Serving Kitchener, Cambridge, Guelph, Waterloo, Ayr, Woodstock, and Brantford',
     serviceArea: 'Kitchener, Cambridge, Guelph, Waterloo, Ayr, Woodstock, and Brantford, Ontario',
-    hours: 'Mon–Fri 8am–6pm · Sat 9am–4pm · Sun closed',
+    hours: 'Mon–Fri 12pm–8pm · Sat–Sun 8am–8pm',
 };
 
 export const SERVICE_LOCATIONS = ['Kitchener', 'Cambridge', 'Guelph', 'Waterloo', 'Ayr', 'Woodstock', 'Brantford'];
 
 export const IMAGES = {
-    hero: 'https://images.hostinger.com/b3d75ad7-b23f-4702-9529-09d21151b0d7.png',
-    polish: 'https://images.hostinger.com/c7bf0fde-7950-4e95-a134-d119f725e35f.png',
-    interior: 'https://images.hostinger.com/8dcc5d96-726b-46b1-b7e3-3bbac56610b4.png',
-    before: 'https://images.hostinger.com/0be72380-2bd9-4c62-bcfc-23f3a21e0af1.png',
-    after: 'https://images.hostinger.com/0d16a7b5-6fa6-404b-925b-8b39123b9175.png',
-    ceramic: 'https://images.hostinger.com/1e4978fd-c690-461d-81b8-a1eed50e7419.png',
-    wheels: 'https://images.hostinger.com/0a0b9a63-2b0d-4ca2-ac7b-e5928bb9ec1b.png',
-    owner: 'https://images.hostinger.com/7b16b562-d292-4b0d-b5d4-2b4f215dfe07.png',
+    hero: '/images/hero.png',
+    polish: '/images/polish.png',
+    interior: '/images/interior.png',
+    before: '/images/before.png',
+    after: '/images/after.png',
+    ceramic: '/images/ceramic.png',
+    wheels: '/images/wheels.png',
+    owner: '/images/owner.png',
 };
 
 export const SERVICES = [

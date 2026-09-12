@@ -5,9 +5,11 @@ const path = require('path');
 const PORT = Number(process.env.PORT) || 4000;
 const DATA_DIR = path.join(__dirname, 'data');
 const DATA_FILE = path.join(DATA_DIR, 'shared-store.json');
+const nodemailer = require('nodemailer');
 const WEB_DIR = path.join(__dirname, 'web', 'dist');
 
 const defaultState = {
+  enquiries: [],
   bookings: [
     {
       id: 'booking-001',
@@ -125,6 +127,7 @@ const readState = () => {
     const parsed = JSON.parse(content);
     return {
       bookings: Array.isArray(parsed.bookings) ? parsed.bookings : defaultState.bookings,
+      enquiries: Array.isArray(parsed.enquiries) ? parsed.enquiries : defaultState.enquiries,
       employees: Array.isArray(parsed.employees) ? parsed.employees : defaultState.employees,
     };
   } catch {
@@ -135,6 +138,7 @@ const readState = () => {
 const writeState = (nextState) => {
   ensureDataFile();
   const safeState = {
+    enquiries: Array.isArray(nextState?.enquiries) ? nextState.enquiries : defaultState.enquiries,
     bookings: Array.isArray(nextState?.bookings) ? nextState.bookings : defaultState.bookings,
     employees: Array.isArray(nextState?.employees) ? nextState.employees : defaultState.employees,
   };
@@ -277,6 +281,58 @@ const server = http.createServer((req, res) => {
       });
       return;
     }
+  }
+  if (url.pathname === '/api/enquiries' && req.method === 'POST') {
+    let raw = '';
+    req.on('data', (chunk) => {
+      raw += chunk;
+    });
+    req.on('end', async () => {
+      try {
+        const parsed = raw ? JSON.parse(raw) : {};
+        const service = String(parsed.service || '').trim();
+        const phone = String(parsed.phone || '').trim();
+        const message = String(parsed.message || '').trim();
+        if (!service || !phone || !message) {
+          sendJson(res, 400, { error: 'Service, phone number, and enquiry are required.' });
+          return;
+        }
+
+        const enquiry = {
+          id: `enquiry-${Date.now()}`,
+          service,
+          phone,
+          message,
+          created: new Date().toISOString(),
+          status: 'Pending',
+        };
+        const current = readState();
+        writeState({ ...current, enquiries: [...current.enquiries, enquiry] });
+
+        if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+          sendJson(res, 503, { error: 'Enquiry was saved, but email delivery is not configured.' });
+          return;
+        }
+
+        const transporter = nodemailer.createTransport({
+          host: process.env.SMTP_HOST,
+          port: Number(process.env.SMTP_PORT) || 587,
+          secure: process.env.SMTP_SECURE === 'true',
+          auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+        });
+        await transporter.sendMail({
+          from: process.env.SMTP_FROM || process.env.SMTP_USER,
+          to: 'akaaldetailerz13@gmail.com',
+          replyTo: process.env.SMTP_FROM || process.env.SMTP_USER,
+          subject: `Service enquiry: ${service}`,
+          text: `Service: ${service}\nCustomer phone: ${phone}\n\nEnquiry:\n${message}`,
+        });
+        sendJson(res, 201, { ok: true });
+      } catch (error) {
+        sendJson(res, 500, { error: error?.message || 'Unable to send enquiry.' });
+      }
+    });
+    return;
   }
 
   serveWebApp(req, res, url);
