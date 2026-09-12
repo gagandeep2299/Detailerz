@@ -2,9 +2,6 @@ services:
   - type: web
     runtime: node
     name: detailerz
-    buildCommand: cd app && npm ci && npm --prefix web ci && npm run build
+    buildCommand: cd app && npm ci --include=dev && npm --prefix web ci --include=dev && npm run build
     startCommand: cd app && npm start
     healthCheckPath: /health
-    envVars:
-      - key: NODE_ENV
-        value: production
