@@ -118,24 +118,24 @@ export default function AdminPage() {
     return (
         <div className="min-h-screen bg-background text-foreground">
             <header className="border-b border-border bg-primary text-primary-foreground">
-                <div className="mx-auto flex max-w-[1400px] items-center justify-between px-5 py-5">
+                <div className="mx-auto flex max-w-[1400px] flex-col gap-5 px-4 py-4 sm:px-5 sm:py-5 lg:flex-row lg:items-center lg:justify-between">
                     <div>
                         <p className="font-display text-sm uppercase tracking-[0.35em] text-accent">Detailerz</p>
                         <h1 className="mt-2 font-display text-3xl uppercase">Admin dashboard</h1>
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    <div className="flex w-full flex-wrap items-center gap-2 sm:gap-4 lg:w-auto">
                         <button
                             type="button"
                             onClick={() => navigate('/admin/employees')}
-                            className="border border-white/15 bg-white/5 px-4 py-2 font-display text-sm uppercase transition hover:bg-white/10"
+                            className="border border-white/15 bg-white/5 px-3 py-2 font-display text-xs uppercase transition hover:bg-white/10 sm:px-4 sm:text-sm"
                         >
                             Employees
                         </button>
                         <button
                             type="button"
                             onClick={() => navigate('/admin/customers')}
-                            className="border border-white/15 bg-white/5 px-4 py-2 font-display text-sm uppercase transition hover:bg-white/10"
+                            className="border border-white/15 bg-white/5 px-3 py-2 font-display text-xs uppercase transition hover:bg-white/10 sm:px-4 sm:text-sm"
                         >
                             Customers
                         </button>
@@ -146,7 +146,7 @@ export default function AdminPage() {
                         <button
                             type="button"
                             onClick={handleLogout}
-                            className="flex items-center gap-2 border border-white/15 bg-white/5 px-4 py-2 font-display text-sm uppercase transition hover:bg-white/10"
+                            className="flex items-center gap-2 border border-white/15 bg-white/5 px-3 py-2 font-display text-xs uppercase transition hover:bg-white/10 sm:px-4 sm:text-sm"
                         >
                             <LogOut className="h-4 w-4" /> Logout
                         </button>
@@ -154,19 +154,19 @@ export default function AdminPage() {
                 </div>
             </header>
 
-            <main className="mx-auto max-w-[1400px] space-y-8 px-5 py-8">
-                <section className="flex flex-wrap items-center gap-3">
+            <main className="mx-auto max-w-[1400px] space-y-8 px-4 py-6 sm:px-5 sm:py-8">
+                <section className="flex flex-col items-stretch gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3">
                     <button
                         type="button"
                         onClick={handleExport}
-                        className="inline-flex items-center gap-2 bg-accent px-4 py-2 font-display text-base uppercase text-accent-foreground"
+                        className="inline-flex items-center justify-center gap-2 bg-accent px-4 py-2 font-display text-base uppercase text-accent-foreground sm:justify-start"
                     >
                         <Download className="h-4 w-4" /> Export CSV
                     </button>
                     <button
                         type="button"
                         onClick={handleReset}
-                        className="inline-flex items-center gap-2 border border-border bg-card px-4 py-2 font-display text-base uppercase text-foreground"
+                        className="inline-flex items-center justify-center gap-2 border border-border bg-card px-4 py-2 font-display text-base uppercase text-foreground sm:justify-start"
                     >
                         <RefreshCw className="h-4 w-4" /> Reset demo data
                     </button>
@@ -180,7 +180,7 @@ export default function AdminPage() {
                 </section>
 
                 <section className="grid gap-6 xl:grid-cols-[1.6fr_0.8fr]">
-                    <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
+                    <div className="min-w-0 rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
                         <div className="mb-5 flex items-center justify-between">
                             <div>
                                 <p className="font-display text-sm uppercase tracking-[0.28em] text-muted-foreground">Revenue trend</p>
@@ -189,13 +189,15 @@ export default function AdminPage() {
                             <BarChart3 className="h-6 w-6 text-accent" />
                         </div>
 
-                        <div className="flex h-64 items-end gap-3">
-                            {chartSeries.map((item) => (
-                                <div key={item.label} className="flex flex-1 flex-col items-center justify-end gap-3">
-                                    <div className="w-full rounded-t bg-gradient-to-t from-amber-500 to-accent/80" style={{ height: `${Math.max((item.value / Math.max(...chartSeries.map((x) => x.value), 1)) * 100, 10)}%` }} />
-                                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{item.label}</span>
-                                </div>
-                            ))}
+                        <div className="overflow-x-auto">
+                            <div className="flex h-64 min-w-[620px] items-end gap-3">
+                                {chartSeries.map((item) => (
+                                    <div key={item.label} className="flex flex-1 flex-col items-center justify-end gap-3">
+                                        <div className="w-full rounded-t bg-gradient-to-t from-amber-500 to-accent/80" style={{ height: `${Math.max((item.value / Math.max(...chartSeries.map((x) => x.value), 1)) * 100, 10)}%` }} />
+                                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground">{item.label}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
@@ -214,13 +216,13 @@ export default function AdminPage() {
                                     key={`${customer.email}-${index}`}
                                     type="button"
                                     onClick={() => navigate(`/admin/customers/${customer.customerId || customer.email}`)}
-                                    className="flex w-full items-center justify-between rounded-lg border border-border bg-secondary p-3 text-left transition hover:border-accent/60"
+                                    className="flex w-full min-w-0 flex-col items-stretch gap-2 rounded-lg border border-border bg-secondary p-3 text-left transition hover:border-accent/60 sm:flex-row sm:items-center sm:justify-between sm:gap-3"
                                 >
-                                    <div>
-                                        <p className="font-display text-lg uppercase">{customer.name}</p>
-                                        <p className="text-xs text-muted-foreground">{customer.email}</p>
+                                    <div className="min-w-0">
+                                        <p className="break-words font-display text-lg uppercase">{customer.name}</p>
+                                        <p className="break-all text-xs text-muted-foreground">{customer.email}</p>
                                     </div>
-                                    <span className="font-display text-xl text-accent">{currency.format(customer.total)}</span>
+                                    <span className="self-start font-display text-xl text-accent sm:self-auto">{currency.format(customer.total)}</span>
                                 </button>
                             ))}
                         </div>
@@ -228,8 +230,8 @@ export default function AdminPage() {
                 </section>
 
                 <section className="grid gap-6 xl:grid-cols-[1.5fr_0.8fr]">
-                    <div className="rounded-xl border border-border bg-card shadow-sm">
-                        <div className="flex items-center justify-between border-b border-border px-5 py-4">
+                    <div className="min-w-0 rounded-xl border border-border bg-card shadow-sm">
+                        <div className="flex flex-col items-start gap-3 border-b border-border px-4 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-5">
                             <div>
                                 <p className="font-display text-sm uppercase tracking-[0.28em] text-muted-foreground">Bookings</p>
                                 <h2 className="mt-2 font-display text-2xl uppercase">Latest bookings</h2>
@@ -339,8 +341,8 @@ export default function AdminPage() {
                         </div>
                     </div>
 
-                    <div className="rounded-xl border border-border bg-card p-5 shadow-sm">
-                        <div className="mb-6 flex items-center justify-between">
+                    <div className="min-w-0 rounded-xl border border-border bg-card p-4 shadow-sm sm:p-5">
+                        <div className="mb-6 flex items-center justify-between gap-3">
                             <div>
                                 <p className="font-display text-sm uppercase tracking-[0.28em] text-muted-foreground">Customers</p>
                                 <h2 className="mt-2 font-display text-2xl uppercase">Customer list</h2>
@@ -395,11 +397,11 @@ export default function AdminPage() {
 
             {selectedBookingImages && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-                    <div className="w-full max-w-3xl rounded-xl border border-border bg-card p-5 shadow-2xl">
-                        <div className="mb-4 flex items-center justify-between gap-4">
+                    <div className="w-full max-w-3xl rounded-xl border border-border bg-card p-4 shadow-2xl sm:p-5">
+                        <div className="mb-4 flex items-start justify-between gap-4">
                             <div>
                                 <p className="font-display text-sm uppercase tracking-[0.28em] text-muted-foreground">Vehicle photos</p>
-                                <h3 className="mt-2 font-display text-2xl uppercase">{selectedBookingImages.name}</h3>
+                                <h3 className="mt-2 break-words font-display text-2xl uppercase">{selectedBookingImages.name}</h3>
                             </div>
                             <button
                                 type="button"

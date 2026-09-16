@@ -114,18 +114,18 @@ export default function ServicesPage() {
 
             {selectedService && (
                 <div role="dialog" aria-modal="true" aria-labelledby="service-dialog-title" className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-primary/80 p-3 sm:p-4 md:items-center" onMouseDown={(event) => event.target === event.currentTarget && setSelectedService(null)}>
-                    <div className="my-0 max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-y-auto overscroll-contain bg-card p-5 shadow-2xl sm:my-8 sm:max-h-[calc(100dvh-4rem)] sm:p-8">
-                        <div className="sticky top-0 z-10 -mx-5 -mt-5 flex items-start justify-between gap-6 bg-card py-5 sm:static sm:mx-0 sm:mt-0 sm:bg-transparent sm:py-0">
+                    <div className="my-0 max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-y-auto overscroll-contain bg-card p-4 shadow-2xl sm:my-8 sm:max-h-[calc(100dvh-4rem)] sm:p-8">
+                        <div className="sticky top-0 z-10 -mx-4 -mt-4 flex flex-col gap-4 bg-card px-4 py-4 sm:static sm:mx-0 sm:mt-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6 sm:bg-transparent sm:p-0">
                             <div>
                                 <p className="font-display text-sm uppercase tracking-[0.28em] text-accent">Choose your package</p>
-                                <h2 id="service-dialog-title" className="mt-2 font-display text-4xl uppercase">{selectedService.name}</h2>
+                                <h2 id="service-dialog-title" className="mt-2 break-words font-display text-3xl uppercase sm:text-4xl">{selectedService.name}</h2>
                                 <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">{selectedService.desc}</p>
                             </div>
-                            <div className="flex shrink-0 items-start gap-2">
+                            <div className="flex w-full shrink-0 items-center gap-2 sm:w-auto sm:items-start">
                                 <button type="button" onClick={() => setEnquiryOpen(true)} className="flex min-h-10 items-center bg-accent px-3 font-display text-xs uppercase text-accent-foreground">
                                     Enquiry
                                 </button>
-                                <button type="button" onClick={() => setSelectedService(null)} aria-label="Close package options" className="border border-border p-2 text-muted-foreground transition hover:text-foreground">
+                                <button type="button" onClick={() => setSelectedService(null)} aria-label="Close package options" className="ml-auto border border-border p-2 text-muted-foreground transition hover:text-foreground sm:ml-0">
                                     <X className="h-5 w-5" />
                                 </button>
                             </div>
