@@ -1,5 +1,6 @@
 import React from 'react';
 import { useBucket } from '@/contexts/BucketContext';
+import { cn } from '@/lib/utils';
 
 export default function AddToBucketButton({ item, className, children = 'Add to bucket' }) {
     const { addItem, hasItem } = useBucket();
@@ -10,7 +11,7 @@ export default function AddToBucketButton({ item, className, children = 'Add to 
         <button
             type="button"
             onClick={() => addItem(item)}
-            className={className}
+            className={cn(className, inBucket && 'bg-accent text-accent-foreground')}
         >
             {inBucket ? 'Selected' : isPackage ? 'Choose package' : children}
         </button>
