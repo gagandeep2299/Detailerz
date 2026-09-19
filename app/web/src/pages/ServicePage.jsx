@@ -7,7 +7,7 @@ import EnquiryDialog from '@/components/EnquiryDialog';
 import Reveal from '@/components/Reveal';
 import SiteLayout from '@/components/SiteLayout';
 import { makeBucketItem, useBucket } from '@/contexts/BucketContext';
-import { PACKAGES, SERVICES, SERVICE_ADDONS, SERVICE_PACKAGES } from '@/data/site';
+import { EXTERIOR_VEHICLE_TYPES, PACKAGES, SERVICES, SERVICE_ADDONS, SERVICE_PACKAGES } from '@/data/site';
 
 const serviceIcons = {
     cabin: Armchair,
@@ -25,10 +25,12 @@ const addonIcons = {
     odor: Wind,
     'vehicle-size': UsersRound,
     caliper: CircleGauge,
+    headlights: Lightbulb,
 };
 
 export default function ServicesPage() {
     const [selectedService, setSelectedService] = useState(null);
+    const [vehicleType, setVehicleType] = useState(EXTERIOR_VEHICLE_TYPES[0].value);
     const [enquiryOpen, setEnquiryOpen] = useState(false);
     const { count, total } = useBucket();
 
@@ -67,7 +69,7 @@ export default function ServicesPage() {
                 <div className="grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-4">
                     {SERVICES.map((s, i) => (
                         <Reveal key={s.name} delay={(i % 2) * 0.06}>
-                            <button type="button" onClick={() => setSelectedService(s)} className="flex h-full w-full flex-col items-center text-center transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
+                            <button type="button" onClick={() => { setSelectedService(s); setVehicleType(EXTERIOR_VEHICLE_TYPES[0].value); }} className="flex h-full w-full flex-col items-center text-center transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
                                 {(() => {
                                     const Icon = serviceIcons[s.icon];
                                     return <Icon aria-hidden="true" className="mb-5 h-16 w-16 stroke-[1.5] text-accent-foreground" />;
@@ -113,9 +115,9 @@ export default function ServicesPage() {
             </section>
 
             {selectedService && (
-                <div role="dialog" aria-modal="true" aria-labelledby="service-dialog-title" className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-primary/80 p-3 sm:p-4 md:items-center" onMouseDown={(event) => event.target === event.currentTarget && setSelectedService(null)}>
-                    <div className="my-0 max-h-[calc(100dvh-1.5rem)] w-full max-w-5xl overflow-y-auto overscroll-contain bg-card p-4 shadow-2xl sm:my-8 sm:max-h-[calc(100dvh-4rem)] sm:p-8">
-                        <div className="sticky top-0 z-10 -mx-4 -mt-4 flex flex-col gap-4 bg-card px-4 py-4 sm:static sm:mx-0 sm:mt-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6 sm:bg-transparent sm:p-0">
+                <div role="dialog" aria-modal="true" aria-labelledby="service-dialog-title" className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-primary/80 p-0 sm:p-4 md:items-center" onMouseDown={(event) => event.target === event.currentTarget && setSelectedService(null)}>
+                    <div className="my-0 max-h-[100dvh] w-full max-w-5xl overflow-y-auto overscroll-contain bg-card p-4 shadow-2xl sm:my-8 sm:max-h-[calc(100dvh-4rem)] sm:p-8">
+                        <div className="sticky top-0 z-10 -mx-4 -mt-4 flex flex-col gap-4 bg-card px-4 pb-4 pt-0 sm:static sm:mx-0 sm:mt-0 sm:flex-row sm:items-start sm:justify-between sm:gap-6 sm:bg-transparent sm:p-0">
                             <div>
                                 <p className="font-display text-sm uppercase tracking-[0.28em] text-accent">Choose your package</p>
                                 <h2 id="service-dialog-title" className="mt-2 break-words font-display text-3xl uppercase sm:text-4xl">{selectedService.name}</h2>
@@ -135,7 +137,15 @@ export default function ServicesPage() {
                                 <div key={servicePackage.name} className={`flex flex-col border border-border p-5 ${servicePackage.featured ? 'ring-2 ring-accent' : ''}`}>
                                     <h3 className="font-display text-2xl uppercase">{servicePackage.name}</h3>
                                     <p className="mt-2 text-sm text-muted-foreground">{servicePackage.desc}</p>
-                                    <p className="mt-5 font-display text-4xl text-accent-foreground">${servicePackage.price}</p>
+                                    {servicePackage.vehiclePrices && (
+                                        <label className="mt-5 block text-xs uppercase tracking-widest text-muted-foreground">
+                                            Vehicle type
+                                            <select value={vehicleType} onChange={(event) => setVehicleType(event.target.value)} className="mt-2 w-full border border-border bg-card px-3 py-2 text-sm normal-case tracking-normal text-foreground outline-none focus:border-accent">
+                                                {EXTERIOR_VEHICLE_TYPES.map((vehicle) => <option key={vehicle.value} value={vehicle.value}>{vehicle.label}</option>)}
+                                            </select>
+                                        </label>
+                                    )}
+                                    <p className="mt-5 font-display text-4xl text-accent-foreground">${servicePackage.vehiclePrices?.[vehicleType] ?? servicePackage.price}</p>
                                     <p className="mt-1 text-xs uppercase tracking-widest text-muted-foreground">{servicePackage.time}</p>
                                     <ul className="mt-5 flex-1 space-y-2 text-sm text-muted-foreground">
                                         {servicePackage.features.map((feature) => <li key={feature} className="border-b border-border pb-2">{feature}</li>)}
@@ -145,7 +155,7 @@ export default function ServicesPage() {
                                             item={makeBucketItem({
                                                 kind: 'package',
                                                 name: servicePackage.name,
-                                                price: servicePackage.price,
+                                                price: servicePackage.vehiclePrices?.[vehicleType] ?? servicePackage.price,
                                                 service: selectedService.name,
                                                 time: servicePackage.time,
                                                 desc: servicePackage.desc,
@@ -170,7 +180,7 @@ export default function ServicesPage() {
                                 </div>
                                 <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                     {SERVICE_ADDONS[selectedService.name].map((addon) => {
-                                        const Icon = addonIcons[addon.icon];
+                                        const Icon = addonIcons[addon.icon] || SprayCan;
                                         return <div key={addon.name} className="flex flex-col gap-3 border border-border p-4">
                                             <div className="flex items-start gap-3">
                                                 <Icon aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 text-accent-foreground" />

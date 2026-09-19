@@ -10,6 +10,12 @@ export const BUSINESS = {
 
 export const SERVICE_LOCATIONS = ['Kitchener', 'Cambridge', 'Guelph', 'Waterloo', 'Ayr', 'Woodstock', 'Brantford'];
 
+export const EXTERIOR_VEHICLE_TYPES = [
+    { value: 'sedan-coupe', label: 'Sedan / Coupe' },
+    { value: 'suv-crossover', label: 'SUV / Crossover' },
+    { value: 'truck-large-suv-van', label: 'Truck / Large SUV / Van' },
+];
+
 export const IMAGES = {
     hero: '/images/hero.png',
     polish: '/images/polish.png',
@@ -91,6 +97,25 @@ export const SERVICE_PACKAGES = {
             features: ['Everything in (Deluxe) Deep Clean', 'Full deep vacuum 3 stage(include seats sides)', 'All seats shampooing', 'Steam cleaning for seats & carpets', 'AC vents deep clean (steam)', 'Leather cleaning & conditioning', 'Door panels & trims restored','Light roof strains','Truck vacuumed'],
         },
     ],
+    'Showroom Exterior Finish': [
+        {
+            name: 'Express Exterior Wash',
+            price: 50,
+            time: '45–60 min',
+            desc: 'A quick exterior reset with a careful hand wash and clean finish.',
+            vehiclePrices: { 'sedan-coupe': 50, 'suv-crossover': 60, 'truck-large-suv-van': 70 },
+            features: ['Hand Wash & Foam Bath', 'Wheels & Tires', 'Soft microfiber hand dry + air blowout', 'Exterior glass and mirror cleaning'],
+            featured: true,
+        },
+        {
+            name: 'Decontamination & Protection Wash',
+            price: 120,
+            time: '2–3 hrs',
+            desc: 'A deep exterior clean with paint decontamination and protective finishing.',
+            vehiclePrices: { 'sedan-coupe': 120, 'suv-crossover': 140, 'truck-large-suv-van': 155 },
+            features: ['Complete Foam & Pre-Soak', 'Deep Wheel & Barrel Cleaning', 'Paint decontamination with iron remover and clay bar', 'Door jambs & trims deep clean', 'Microfiber hand dry + full air blowout'],
+        },
+    ],
     'Truck Detailing': [
         {
             name: 'Day Cab Interior Refresh',
@@ -117,7 +142,10 @@ export const SERVICE_ADDONS = {
         { name: '7-Seater, Van, or Pickup Truck', price: 20, icon: 'vehicle-size', desc: 'Additional charge for larger interiors and extra seating capacity.' },
     ],
     'Showroom Exterior Finish': [
-        { name: 'Caliper Rust Clean', price: 39, icon: 'caliper', desc: 'Specialized cleaning to remove rust buildup from brake calipers.' },
+        { name: 'Headlight Restoration', price: 60, icon: 'headlights', desc: 'Restore faded headlights for improved nighttime visibility and a cleaner-looking front end.' },
+        { name: 'Engine Bay Steam Clean & Dress', price: 60, icon: 'headlights', desc: 'Deep steam cleaning and dressing for the engine bay area.' },
+        { name: 'Heavy Bug & Tar / Sap Removal', price: 20, icon: 'caliper', desc: 'Targeted removal of stubborn bug, tar, and sap buildup from the paint.' },
+        { name: 'Iron / Salt Removal Upgrade', price: 30, icon: 'caliper', desc: 'Upgrade treatment to remove embedded iron and salt contaminants from the paint.' },
     ],
 };
 
