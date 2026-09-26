@@ -72,6 +72,8 @@ export const BucketProvider = ({ children }) => {
 
             const existing = current.find((entry) => entry.id === item.id);
             if (existing) {
+                if (item.kind === 'addon') return current;
+
                 return current.map((entry) => (
                     entry.id === item.id
                         ? { ...entry, qty: Number(entry.qty || 1) + 1 }

@@ -174,6 +174,12 @@ export const PACKAGES = [
     },
 ];
 
+export const VISIBLE_SERVICES = SERVICES.filter(({ name }) => (
+    name !== 'Paint Correction' && name !== 'Ceramic Shield Coating'
+));
+
+export const SHOW_BUNDLED_PACKAGES = false;
+
 export const GALLERY = [
     { src: IMAGES.before, label: 'Before — 2016 sedan, three years without a polish', tag: 'Before' },
     { src: IMAGES.after, label: 'After — two-stage correction and sealant', tag: 'After' },

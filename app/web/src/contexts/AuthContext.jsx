@@ -4,13 +4,6 @@ import inMemoryDb from '@/lib/inMemoryDb';
 
 const normalizeEmail = (value = '') => String(value || '').trim().toLowerCase();
 
-const DEMO_ADMIN = {
-    id: 'demo-admin',
-    email: 'admin@akaaldetailerz.com',
-    name: 'Akaal Detailerz Admin',
-    role: 'admin',
-};
-
 const DEMO_EMPLOYEE = {
     id: 'demo-employee',
     employeeId: 'emp-101',
@@ -23,7 +16,8 @@ const getStoredDemoUser = () => {
     if (typeof window === 'undefined') return null;
 
     try {
-        return JSON.parse(window.localStorage.getItem('detailerz-demo-user') || 'null');
+        const storedUser = JSON.parse(window.localStorage.getItem('detailerz-demo-user') || 'null');
+        return storedUser?.role === 'employee' ? storedUser : null;
     } catch {
         return null;
     }
@@ -47,19 +41,34 @@ const AuthContext = createContext(null);
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(() => {
         const demoUser = getStoredDemoUser();
-        return demoUser || pb?.authStore?.record || null;
+        const pocketBaseUser = pb?.authStore?.record;
+        return demoUser || (pocketBaseUser?.role === 'admin' ? null : pocketBaseUser) || null;
     });
 
     useEffect(() => {
         if (!pb?.authStore?.onChange) return undefined;
 
-        const handleChange = (_token, record) => setUser(record || getStoredDemoUser());
+        const handleChange = (_token, record) => setUser(record?.role === 'admin' ? getStoredDemoUser() : record || getStoredDemoUser());
         pb.authStore.onChange(handleChange);
 
         return () => {
             if (pb?.authStore?.onChange) {
                 pb.authStore.onChange(() => {});
             }
+        };
+    }, []);
+
+    useEffect(() => {
+        let active = true;
+        fetch('/api/admin/session', { cache: 'no-store' })
+            .then((response) => response.ok ? response.json() : null)
+            .then((session) => {
+                if (active && session?.user) setUser(session.user);
+            })
+            .catch(() => {});
+
+        return () => {
+            active = false;
         };
     }, []);
 
@@ -119,18 +128,19 @@ export const AuthProvider = ({ children }) => {
     const value = useMemo(() => ({
         user,
         isAuthed: !!user || !!pb?.authStore?.isValid,
-        login: async (email, password) => {
+        login: async (email, password, requestedRole) => {
             const normalizedEmail = String(email || '').trim().toLowerCase();
-            const demoUser = getStoredDemoUser();
 
-            if (
-                normalizedEmail === DEMO_ADMIN.email && String(password || '') === 'admin123'
-            ) {
-                const nextUser = { ...DEMO_ADMIN, email: normalizedEmail };
-
-                writeDemoUser(nextUser);
-                setUser(nextUser);
-                return nextUser;
+            if (requestedRole === 'admin') {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: normalizedEmail, password }),
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) throw new Error(result.error || 'Unable to sign in.');
+                setUser(result.user);
+                return result.user;
             }
 
             const employeeMatch = inMemoryDb.getEmployees().find((employee) => normalizeEmail(employee.email) === normalizedEmail);
@@ -163,19 +173,19 @@ export const AuthProvider = ({ children }) => {
             if (pb?.collection) {
                 try {
                     const authData = await pb.collection('users').authWithPassword(email, password);
-                    setUser(authData?.record || pb.authStore.record || null);
-                    return authData?.record || pb.authStore.record || null;
+                    const authenticatedUser = authData?.record || pb.authStore.record || null;
+                    if (authenticatedUser?.role === 'admin') {
+                        pb.authStore.clear();
+                        throw new Error('Use the admin sign-in page.');
+                    }
+                    setUser(authenticatedUser);
+                    return authenticatedUser;
                 } catch (error) {
                     if (error?.status === 400 || error?.status === 403 || error?.status === 404) {
                         throw new Error('Invalid email or password.');
                     }
                     throw error;
                 }
-            }
-
-            if (demoUser) {
-                setUser(demoUser);
-                return demoUser;
             }
 
             throw new Error('Invalid email or password.');
@@ -194,17 +204,12 @@ export const AuthProvider = ({ children }) => {
                 return authData?.record || pb.authStore.record || null;
             }
 
-            const nextUser = {
-                ...DEMO_ADMIN,
-                email: String(email || '').trim().toLowerCase(),
-                name: extraFields.name || 'Demo Admin',
-            };
-
-            writeDemoUser(nextUser);
-            setUser(nextUser);
-            return nextUser;
+            throw new Error('Account registration is unavailable.');
         },
         logout: () => {
+            if (user?.role === 'admin') {
+                fetch('/api/admin/logout', { method: 'POST' }).catch(() => {});
+            }
             writeDemoUser(null);
 
             if (pb?.authStore?.clear) {

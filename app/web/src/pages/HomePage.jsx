@@ -1,15 +1,15 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import { Armchair, ArrowRight, CarFront, CircleGauge, Clock, Lightbulb, Paintbrush, PawPrint, Play, Plus, ShieldCheck, ShoppingBag, SprayCan, Sparkles, Truck, UsersRound, Video, Wind, X } from 'lucide-react';
+import { Armchair, ArrowRight, CarFront, CircleGauge, Clock, Lightbulb, Paintbrush, PawPrint, Play, Plus, ShieldCheck, ShoppingBag, SprayCan, Sparkles, Trash2, Truck, UsersRound, Video, Wind, X } from 'lucide-react';
 import Reveal from '../components/Reveal.jsx';
 import CountUp from '../components/CountUp';
 import SiteLayout from '../components/SiteLayout';
 import MarketingVideoPlayer from '../components/MarketingVideoPlayer';
 import AddToBucketButton from '../components/AddToBucketButton';
 import EnquiryDialog from '../components/EnquiryDialog';
-import { makeBucketItem } from '../contexts/BucketContext';
-import { BUSINESS, EXTERIOR_VEHICLE_TYPES, IMAGES, PACKAGES, SERVICES, SERVICE_ADDONS, SERVICE_PACKAGES, TESTIMONIALS } from '../data/site';
+import { makeBucketItem, useBucket } from '../contexts/BucketContext';
+import { BUSINESS, EXTERIOR_VEHICLE_TYPES, IMAGES, PACKAGES, VISIBLE_SERVICES, SERVICE_ADDONS, SERVICE_PACKAGES, TESTIMONIALS, SHOW_BUNDLED_PACKAGES } from '../data/site';
 const serviceIcons = {
     cabin: Armchair,
     exterior: CarFront,
@@ -43,6 +43,7 @@ export default function HomePage() {
     const [selectedService, setSelectedService] = useState(null);
     const [vehicleType, setVehicleType] = useState(EXTERIOR_VEHICLE_TYPES[0].value);
     const [enquiryOpen, setEnquiryOpen] = useState(false);
+    const { items, removeItem } = useBucket();
     const getPackages = (service) => SERVICE_PACKAGES[service.name] || [
         {
             name: 'Essential',
@@ -164,7 +165,7 @@ export default function HomePage() {
                         <h2 className="font-display text-4xl uppercase sm:text-5xl">Services & pricing</h2>
                     </Reveal>
                     <div className="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-                        {SERVICES.map((s, i) => <Reveal key={s.name} delay={i * 0.05}>
+                        {VISIBLE_SERVICES.map((s, i) => <Reveal key={s.name} delay={i * 0.05}>
                             <button type="button" onClick={() => { setSelectedService(s); setVehicleType(EXTERIOR_VEHICLE_TYPES[0].value); }} className="flex h-full w-full flex-col items-center text-center transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
                                     {(() => {
                                       const Icon = serviceIcons[s.icon];
@@ -201,7 +202,19 @@ export default function HomePage() {
                                         </div>
                                     </div>
                                     <div className="mt-8 grid gap-5 md:grid-cols-3">
-                                        {getPackages(selectedService).map((servicePackage) => (
+                                        {getPackages(selectedService).map((servicePackage) => {
+                                            const bucketItem = makeBucketItem({
+                                                kind: 'package',
+                                                name: servicePackage.name,
+                                                price: servicePackage.vehiclePrices?.[vehicleType] ?? servicePackage.price,
+                                                service: selectedService.name,
+                                                time: servicePackage.time,
+                                                desc: servicePackage.desc,
+                                                category: selectedService.name === 'Interior Cleaning' ? 'interior' : 'exterior',
+                                            });
+                                            const isSelected = items.some((item) => item.id === bucketItem.id);
+
+                                            return (
                                             <div key={servicePackage.name} className={`flex flex-col border border-border p-5 ${servicePackage.featured ? 'ring-2 ring-accent' : ''}`}>
                                                 <h3 className="font-display text-2xl uppercase">{servicePackage.name}</h3>
                                                 <p className="mt-2 text-sm text-muted-foreground">{servicePackage.desc}</p>
@@ -220,25 +233,29 @@ export default function HomePage() {
                                                 </ul>
                                                 <div className="mt-6 flex w-full items-center gap-2">
                                                     <AddToBucketButton
-                                                        item={makeBucketItem({
-                                                            kind: 'package',
-                                                            name: servicePackage.name,
-                                                            price: servicePackage.vehiclePrices?.[vehicleType] ?? servicePackage.price,
-                                                            service: selectedService.name,
-                                                            time: servicePackage.time,
-                                                            desc: servicePackage.desc,
-                                                            category: selectedService.name === 'Interior Cleaning' ? 'interior' : 'exterior',
-                                                        })}
+                                                        item={bucketItem}
                                                         className="flex min-h-[40px] min-w-0 flex-1 items-center justify-center bg-primary px-3 font-display text-sm uppercase text-primary-foreground"
                                                     >
                                                         Add to bucket
                                                     </AddToBucketButton>
+                                                    {isSelected && (
+                                                        <button
+                                                            type="button"
+                                                            onClick={() => removeItem(bucketItem.id)}
+                                                            aria-label={`Remove ${servicePackage.name} from bucket`}
+                                                            title="Remove package"
+                                                            className="flex h-10 w-10 shrink-0 items-center justify-center border border-border text-foreground transition hover:border-destructive hover:text-destructive"
+                                                        >
+                                                            <Trash2 aria-hidden="true" className="h-4 w-4" />
+                                                        </button>
+                                                    )}
                                                     <Link to="/contact" aria-label="Checkout" title="Checkout" className="flex h-10 w-10 shrink-0 items-center justify-center bg-accent text-accent-foreground">
                                                         <ShoppingBag aria-hidden="true" className="h-4 w-4" />
                                                     </Link>
                                                 </div>
                                             </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                                                         {SERVICE_ADDONS[selectedService.name] && (
                                                                             <div className="mt-8 border-t border-border pt-6">
@@ -249,6 +266,15 @@ export default function HomePage() {
                                                                                 <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                                                                     {SERVICE_ADDONS[selectedService.name].map((addon) => {
                                                                                         const Icon = addonIcons[addon.icon] || Sparkles;
+                                                                                        const addonItem = makeBucketItem({
+                                                                                            kind: 'addon',
+                                                                                            name: addon.name,
+                                                                                            price: addon.price,
+                                                                                            service: selectedService.name,
+                                                                                            desc: addon.desc,
+                                                                                        });
+                                                                                        const isAddonSelected = items.some((item) => item.id === addonItem.id);
+
                                                                                         return <div key={addon.name} className="flex flex-col gap-3 border border-border p-4">
                                                                                             <div className="flex items-start gap-3">
                                                                                                 <Icon aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 text-accent-foreground" />
@@ -260,18 +286,25 @@ export default function HomePage() {
                                                                                                     <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{addon.desc}</p>
                                                                                                 </div>
                                                                                             </div>
-                                                                                            <AddToBucketButton
-                                                                                                item={makeBucketItem({
-                                                                                                    kind: 'addon',
-                                                                                                    name: addon.name,
-                                                                                                    price: addon.price,
-                                                                                                    service: selectedService.name,
-                                                                                                    desc: addon.desc,
-                                                                                                })}
-                                                                                                className="flex min-h-[36px] w-fit self-center items-center justify-center border border-primary bg-transparent px-3 font-display text-xs uppercase text-primary"
-                                                                                            >
-                                                                                                Add addon
-                                                                                            </AddToBucketButton>
+                                                                                            <div className="flex items-center justify-center gap-2">
+                                                                                                <AddToBucketButton
+                                                                                                    item={addonItem}
+                                                                                                    className="flex min-h-[36px] w-fit items-center justify-center border border-primary bg-transparent px-3 font-display text-xs uppercase text-primary"
+                                                                                                >
+                                                                                                    Add addon
+                                                                                                </AddToBucketButton>
+                                                                                                {isAddonSelected && (
+                                                                                                    <button
+                                                                                                        type="button"
+                                                                                                        onClick={() => removeItem(addonItem.id)}
+                                                                                                        aria-label={`Remove ${addon.name} from bucket`}
+                                                                                                        title="Remove add-on"
+                                                                                                        className="flex h-9 w-9 shrink-0 items-center justify-center border border-border text-foreground transition hover:border-destructive hover:text-destructive"
+                                                                                                    >
+                                                                                                        <Trash2 aria-hidden="true" className="h-4 w-4" />
+                                                                                                    </button>
+                                                                                                )}
+                                                                                            </div>
                                                                                         </div>;
                                                                                     })}
                                                                                 </div>
@@ -315,7 +348,7 @@ export default function HomePage() {
             </section>
 
             {/* Packages */}
-            <section className="bg-primary py-20 text-primary-foreground md:py-28">
+            {SHOW_BUNDLED_PACKAGES && <section className="bg-primary py-20 text-primary-foreground md:py-28">
                 <div className="mx-auto max-w-[72rem] px-5">
                     <Reveal>
                         <h2 className="font-display text-4xl uppercase sm:text-5xl">Packages</h2>
@@ -347,7 +380,7 @@ export default function HomePage() {
                             </Reveal>)}
                     </div>
                 </div>
-            </section>
+            </section>}
 
             {/* Testimonials */}
             <section className="mx-auto max-w-[72rem] px-5 py-20 md:py-28">

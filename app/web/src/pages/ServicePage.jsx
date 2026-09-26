@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Helmet } from 'react-helmet';
 import { Link } from 'react-router-dom';
-import { Armchair, CarFront, CircleGauge, Lightbulb, Paintbrush, PawPrint, Plus, ShieldCheck, ShoppingBag, SprayCan, Truck, UsersRound, Wind, X } from 'lucide-react';
+import { Armchair, CarFront, CircleGauge, Lightbulb, Paintbrush, PawPrint, Plus, ShieldCheck, ShoppingBag, SprayCan, Trash2, Truck, UsersRound, Wind, X } from 'lucide-react';
 import AddToBucketButton from '@/components/AddToBucketButton';
 import EnquiryDialog from '@/components/EnquiryDialog';
 import Reveal from '@/components/Reveal';
 import SiteLayout from '@/components/SiteLayout';
 import { makeBucketItem, useBucket } from '@/contexts/BucketContext';
-import { EXTERIOR_VEHICLE_TYPES, PACKAGES, SERVICES, SERVICE_ADDONS, SERVICE_PACKAGES } from '@/data/site';
+import { EXTERIOR_VEHICLE_TYPES, PACKAGES, VISIBLE_SERVICES, SERVICE_ADDONS, SERVICE_PACKAGES, SHOW_BUNDLED_PACKAGES } from '@/data/site';
 
 const serviceIcons = {
     cabin: Armchair,
@@ -32,7 +32,7 @@ export default function ServicesPage() {
     const [selectedService, setSelectedService] = useState(null);
     const [vehicleType, setVehicleType] = useState(EXTERIOR_VEHICLE_TYPES[0].value);
     const [enquiryOpen, setEnquiryOpen] = useState(false);
-    const { count, total } = useBucket();
+    const { items, count, total, removeItem } = useBucket();
 
     const getPackages = (service) => SERVICE_PACKAGES[service.name] || [
         {
@@ -67,7 +67,7 @@ export default function ServicesPage() {
 
             <section className="mx-auto max-w-[78rem] px-5 pb-20 md:pb-28">
                 <div className="grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-4">
-                    {SERVICES.map((s, i) => (
+                    {VISIBLE_SERVICES.map((s, i) => (
                         <Reveal key={s.name} delay={(i % 2) * 0.06}>
                             <button type="button" onClick={() => { setSelectedService(s); setVehicleType(EXTERIOR_VEHICLE_TYPES[0].value); }} className="flex h-full w-full flex-col items-center text-center transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
                                 {(() => {
@@ -83,7 +83,7 @@ export default function ServicesPage() {
                 </div>
             </section>
 
-            <section className="bg-secondary px-5 py-16 md:py-24">
+            {SHOW_BUNDLED_PACKAGES && <section className="bg-secondary px-5 py-16 md:py-24">
                 <div className="mx-auto max-w-[72rem]">
                     <h2 className="font-display text-4xl uppercase sm:text-5xl">Bundled packages</h2>
                     <div className="mt-10 grid gap-6 md:grid-cols-3">
@@ -112,7 +112,7 @@ export default function ServicesPage() {
                         ))}
                     </div>
                 </div>
-            </section>
+            </section>}
 
             {selectedService && (
                 <div role="dialog" aria-modal="true" aria-labelledby="service-dialog-title" className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto overscroll-contain bg-primary/80 p-0 sm:p-4 md:items-center" onMouseDown={(event) => event.target === event.currentTarget && setSelectedService(null)}>
@@ -133,7 +133,19 @@ export default function ServicesPage() {
                             </div>
                         </div>
                         <div className="mt-8 grid gap-5 md:grid-cols-3">
-                            {getPackages(selectedService).map((servicePackage) => (
+                            {getPackages(selectedService).map((servicePackage) => {
+                                const bucketItem = makeBucketItem({
+                                    kind: 'package',
+                                    name: servicePackage.name,
+                                    price: servicePackage.vehiclePrices?.[vehicleType] ?? servicePackage.price,
+                                    service: selectedService.name,
+                                    time: servicePackage.time,
+                                    desc: servicePackage.desc,
+                                    category: selectedService.name === 'Interior Cleaning' ? 'interior' : 'exterior',
+                                });
+                                const isSelected = items.some((item) => item.id === bucketItem.id);
+
+                                return (
                                 <div key={servicePackage.name} className={`flex flex-col border border-border p-5 ${servicePackage.featured ? 'ring-2 ring-accent' : ''}`}>
                                     <h3 className="font-display text-2xl uppercase">{servicePackage.name}</h3>
                                     <p className="mt-2 text-sm text-muted-foreground">{servicePackage.desc}</p>
@@ -152,25 +164,29 @@ export default function ServicesPage() {
                                     </ul>
                                     <div className="mt-6 flex w-full items-center gap-2">
                                         <AddToBucketButton
-                                            item={makeBucketItem({
-                                                kind: 'package',
-                                                name: servicePackage.name,
-                                                price: servicePackage.vehiclePrices?.[vehicleType] ?? servicePackage.price,
-                                                service: selectedService.name,
-                                                time: servicePackage.time,
-                                                desc: servicePackage.desc,
-                                                category: selectedService.name === 'Interior Cleaning' ? 'interior' : 'exterior',
-                                            })}
+                                            item={bucketItem}
                                             className="flex min-h-[40px] min-w-0 flex-1 items-center justify-center bg-primary px-3 font-display text-sm uppercase text-primary-foreground"
                                         >
                                             Add to bucket
                                         </AddToBucketButton>
+                                        {isSelected && (
+                                            <button
+                                                type="button"
+                                                onClick={() => removeItem(bucketItem.id)}
+                                                aria-label={`Remove ${servicePackage.name} from bucket`}
+                                                title="Remove package"
+                                                className="flex h-10 w-10 shrink-0 items-center justify-center border border-border text-foreground transition hover:border-destructive hover:text-destructive"
+                                            >
+                                                <Trash2 aria-hidden="true" className="h-4 w-4" />
+                                            </button>
+                                        )}
                                         <Link to="/contact" aria-label="Checkout" title="Checkout" className="flex h-10 w-10 shrink-0 items-center justify-center bg-accent text-accent-foreground">
                                             <ShoppingBag aria-hidden="true" className="h-4 w-4" />
                                         </Link>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                         {SERVICE_ADDONS[selectedService.name] && (
                             <div className="mt-8 border-t border-border pt-6">
@@ -181,6 +197,15 @@ export default function ServicesPage() {
                                 <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                                     {SERVICE_ADDONS[selectedService.name].map((addon) => {
                                         const Icon = addonIcons[addon.icon] || SprayCan;
+                                        const addonItem = makeBucketItem({
+                                            kind: 'addon',
+                                            name: addon.name,
+                                            price: addon.price,
+                                            service: selectedService.name,
+                                            desc: addon.desc,
+                                        });
+                                        const isAddonSelected = items.some((item) => item.id === addonItem.id);
+
                                         return <div key={addon.name} className="flex flex-col gap-3 border border-border p-4">
                                             <div className="flex items-start gap-3">
                                                 <Icon aria-hidden="true" className="mt-0.5 h-6 w-6 shrink-0 text-accent-foreground" />
@@ -192,18 +217,25 @@ export default function ServicesPage() {
                                                     <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{addon.desc}</p>
                                                 </div>
                                             </div>
-                                            <AddToBucketButton
-                                                item={makeBucketItem({
-                                                    kind: 'addon',
-                                                    name: addon.name,
-                                                    price: addon.price,
-                                                    service: selectedService.name,
-                                                    desc: addon.desc,
-                                                })}
-                                                className="flex min-h-[36px] w-fit self-center items-center justify-center border border-primary bg-transparent px-3 font-display text-xs uppercase text-primary"
-                                            >
-                                                Add addon
-                                            </AddToBucketButton>
+                                            <div className="flex items-center justify-center gap-2">
+                                                <AddToBucketButton
+                                                    item={addonItem}
+                                                    className="flex min-h-[36px] w-fit items-center justify-center border border-primary bg-transparent px-3 font-display text-xs uppercase text-primary"
+                                                >
+                                                    Add addon
+                                                </AddToBucketButton>
+                                                {isAddonSelected && (
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeItem(addonItem.id)}
+                                                        aria-label={`Remove ${addon.name} from bucket`}
+                                                        title="Remove add-on"
+                                                        className="flex h-9 w-9 shrink-0 items-center justify-center border border-border text-foreground transition hover:border-destructive hover:text-destructive"
+                                                    >
+                                                        <Trash2 aria-hidden="true" className="h-4 w-4" />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </div>;
                                     })}
                                 </div>

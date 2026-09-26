@@ -1,6 +1,8 @@
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const PORT = Number(process.env.PORT) || 4000;
 const DATA_DIR = path.join(__dirname, 'data');
@@ -10,89 +12,7 @@ const WEB_DIR = path.join(__dirname, 'web', 'dist');
 
 const defaultState = {
   enquiries: [],
-  bookings: [
-    {
-      id: 'booking-001',
-      customerId: 'customer-4267118e',
-      name: 'Danielle Kwon',
-      email: 'danielle@example.com',
-      phone: '(602) 555-0188',
-      vehicle: 'Ram 1500',
-      package: 'Paint correction',
-      preferred_date: '2026-08-18',
-      status: 'Confirmed',
-      amount: 1240,
-      created: '2026-08-12T10:20:00Z',
-      employeeId: 'emp-101',
-      employeeName: 'Alex Martinez',
-      beforeImage: 'https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=900&q=80',
-      afterImage: 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80',
-      feedback: null,
-      feedbackSent: false,
-    },
-    {
-      id: 'booking-002',
-      customerId: 'customer-11645796',
-      name: 'Peter Alvarado',
-      email: 'peter@example.com',
-      phone: '(602) 555-0161',
-      vehicle: 'Honda Pilot',
-      package: 'Interior deep clean',
-      preferred_date: '2026-08-19',
-      status: 'Pending',
-      amount: 240,
-      created: '2026-08-11T14:00:00Z',
-      employeeId: 'emp-101',
-      employeeName: 'Alex Martinez',
-      beforeImage: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=900&q=80',
-      afterImage: '',
-      feedback: null,
-      feedbackSent: false,
-    },
-    {
-      id: 'booking-003',
-      customerId: 'customer-34d62214',
-      name: 'Rhiannon Blake',
-      email: 'rhiannon@example.com',
-      phone: '(602) 555-0129',
-      vehicle: 'Tesla Model 3',
-      package: '5-year ceramic',
-      preferred_date: '2026-08-24',
-      status: 'In progress',
-      amount: 1890,
-      created: '2026-08-12T09:00:00Z',
-      employeeId: 'emp-102',
-      employeeName: 'Jordan Lee',
-      beforeImage: 'https://images.unsplash.com/photo-1549399542-7e3f8b79c341?auto=format&fit=crop&w=900&q=80',
-      afterImage: 'https://images.unsplash.com/photo-1511919884226-fd3cad34687c?auto=format&fit=crop&w=900&q=80',
-      feedback: null,
-      feedbackSent: false,
-    },
-    {
-      id: 'booking-004',
-      customerId: 'customer-8f4f41bf',
-      name: 'Marcus Chen',
-      email: 'marcus@example.com',
-      phone: '(602) 555-0118',
-      vehicle: 'BMW M4',
-      package: 'Full detail',
-      preferred_date: '2026-08-21',
-      status: 'Completed',
-      amount: 690,
-      created: '2026-08-09T11:30:00Z',
-      employeeId: 'emp-102',
-      employeeName: 'Jordan Lee',
-      beforeImage: 'https://images.unsplash.com/photo-1503736334956-4c8f8e92946d?auto=format&fit=crop&w=900&q=80',
-      afterImage: 'https://images.unsplash.com/photo-1494905998402-395d579af36f?auto=format&fit=crop&w=900&q=80',
-      feedback: {
-        rating: 5,
-        message: 'Excellent work and amazing finish. Great communication throughout the process.',
-        sentAt: '2026-08-15T10:00:00Z',
-        sent: true,
-      },
-      feedbackSent: true,
-    },
-  ],
+  bookings: [],
   employees: [
     {
       id: 'emp-101',
@@ -113,10 +33,64 @@ const defaultState = {
   ],
 };
 
+const DEMO_BOOKING_IDS = new Set([
+  'booking-001',
+  'booking-002',
+  'booking-003',
+  'booking-004',
+  'booking-91dd579c-2c53-49ab-a8f1-5b2e66b16506',
+]);
+const ADMIN_SESSION_COOKIE = 'detailerz_admin_session';
+const ADMIN_SESSION_TTL_MS = 8 * 60 * 60 * 1000;
+const adminSessions = new Map();
+const failedAdminLogins = new Map();
+
+const getAdminSession = (req) => {
+  const cookie = String(req.headers.cookie || '').split(';').map((part) => part.trim());
+  const token = cookie.find((part) => part.startsWith(`${ADMIN_SESSION_COOKIE}=`))?.split('=')[1];
+  const session = token ? adminSessions.get(token) : null;
+  if (!session || session.expiresAt <= Date.now()) {
+    if (token) adminSessions.delete(token);
+    return null;
+  }
+  return session;
+};
+
+const isAdminAuthenticated = (req) => Boolean(getAdminSession(req));
+
+const parseRequestBody = (req) => new Promise((resolve, reject) => {
+  let raw = '';
+  req.on('data', (chunk) => {
+    raw += chunk;
+    if (raw.length > 32_768) reject(new Error('Request body is too large.'));
+  });
+  req.on('end', () => {
+    try {
+      resolve(raw ? JSON.parse(raw) : {});
+    } catch {
+      reject(new Error('Invalid JSON payload'));
+    }
+  });
+  req.on('error', reject);
+});
+
 const ensureDataFile = () => {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   if (!fs.existsSync(DATA_FILE)) {
     fs.writeFileSync(DATA_FILE, JSON.stringify(defaultState, null, 2));
+    return;
+  }
+
+  try {
+    const parsed = JSON.parse(fs.readFileSync(DATA_FILE, 'utf8'));
+    if (Array.isArray(parsed.bookings)) {
+      const bookings = parsed.bookings.filter((booking) => !DEMO_BOOKING_IDS.has(booking.id));
+      if (bookings.length !== parsed.bookings.length) {
+        fs.writeFileSync(DATA_FILE, JSON.stringify({ ...parsed, bookings }, null, 2));
+      }
+    }
+  } catch {
+    // Leave malformed state untouched; readState uses the empty default.
   }
 };
 
@@ -126,7 +100,9 @@ const readState = () => {
     const content = fs.readFileSync(DATA_FILE, 'utf8');
     const parsed = JSON.parse(content);
     return {
-      bookings: Array.isArray(parsed.bookings) ? parsed.bookings : defaultState.bookings,
+      bookings: Array.isArray(parsed.bookings)
+        ? parsed.bookings.filter((booking) => !DEMO_BOOKING_IDS.has(booking.id))
+        : defaultState.bookings,
       enquiries: Array.isArray(parsed.enquiries) ? parsed.enquiries : defaultState.enquiries,
       employees: Array.isArray(parsed.employees) ? parsed.employees : defaultState.employees,
     };
@@ -139,7 +115,9 @@ const writeState = (nextState) => {
   ensureDataFile();
   const safeState = {
     enquiries: Array.isArray(nextState?.enquiries) ? nextState.enquiries : defaultState.enquiries,
-    bookings: Array.isArray(nextState?.bookings) ? nextState.bookings : defaultState.bookings,
+    bookings: Array.isArray(nextState?.bookings)
+      ? nextState.bookings.filter((booking) => !DEMO_BOOKING_IDS.has(booking.id))
+      : defaultState.bookings,
     employees: Array.isArray(nextState?.employees) ? nextState.employees : defaultState.employees,
   };
   fs.writeFileSync(DATA_FILE, JSON.stringify(safeState, null, 2));
@@ -149,6 +127,7 @@ const writeState = (nextState) => {
 const sendJson = (res, statusCode, payload) => {
   res.writeHead(statusCode, {
     'Content-Type': 'application/json',
+    'Cache-Control': 'no-store',
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, POST, PUT, OPTIONS',
     'Access-Control-Allow-Headers': 'Content-Type',
@@ -212,7 +191,85 @@ const server = http.createServer((req, res) => {
     return;
   }
 
+  if (url.pathname === '/api/admin/session' && req.method === 'GET') {
+    const session = getAdminSession(req);
+    sendJson(res, session ? 200 : 401, session ? {
+      user: { id: 'admin', email: session.email, name: 'Akaal Detailerz Admin', role: 'admin' },
+    } : { error: 'Not signed in.' });
+    return;
+  }
+
+  if (url.pathname === '/api/admin/login' && req.method === 'POST') {
+    let raw = '';
+    req.on('data', (chunk) => { raw += chunk; });
+    req.on('end', () => {
+      let credentials;
+      try {
+        credentials = raw ? JSON.parse(raw) : {};
+      } catch {
+        sendJson(res, 400, { error: 'Invalid request.' });
+        return;
+      }
+
+      const configuredEmail = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+      const configuredPassword = String(process.env.ADMIN_PASSWORD || '');
+      if (!configuredEmail || configuredPassword.length < 20) {
+        sendJson(res, 503, { error: 'Admin sign-in is not configured on the server.' });
+        return;
+      }
+
+      const address = req.socket.remoteAddress || 'unknown';
+      const failure = failedAdminLogins.get(address) || { attempts: 0, resetAt: Date.now() + 15 * 60 * 1000 };
+      if (failure.resetAt <= Date.now()) {
+        failure.attempts = 0;
+        failure.resetAt = Date.now() + 15 * 60 * 1000;
+      }
+      if (failure.attempts >= 8) {
+        sendJson(res, 429, { error: 'Too many sign-in attempts. Try again later.' });
+        return;
+      }
+
+      const passwordMatches = crypto.timingSafeEqual(
+        crypto.createHash('sha256').update(String(credentials.password || '')).digest(),
+        crypto.createHash('sha256').update(configuredPassword).digest(),
+      );
+      const emailMatches = String(credentials.email || '').trim().toLowerCase() === configuredEmail;
+      if (!emailMatches || !passwordMatches) {
+        failure.attempts += 1;
+        failedAdminLogins.set(address, failure);
+        sendJson(res, 401, { error: 'Invalid email or password.' });
+        return;
+      }
+
+      failedAdminLogins.delete(address);
+      const token = crypto.randomBytes(32).toString('base64url');
+      adminSessions.set(token, { email: configuredEmail, expiresAt: Date.now() + ADMIN_SESSION_TTL_MS });
+      const secureCookie = process.env.NODE_ENV === 'production' || process.env.RENDER === 'true' ? '; Secure' : '';
+      res.setHeader('Set-Cookie', `${ADMIN_SESSION_COOKIE}=${token}; HttpOnly; SameSite=Strict; Path=/; Max-Age=${ADMIN_SESSION_TTL_MS / 1000}${secureCookie}`);
+      sendJson(res, 200, {
+        user: { id: 'admin', email: configuredEmail, name: 'Akaal Detailerz Admin', role: 'admin' },
+      });
+    });
+    return;
+  }
+
+  if (url.pathname === '/api/admin/logout' && req.method === 'POST') {
+    const session = getAdminSession(req);
+    if (session) {
+      const token = String(req.headers.cookie || '').split(';').map((part) => part.trim())
+        .find((part) => part.startsWith(`${ADMIN_SESSION_COOKIE}=`))?.split('=')[1];
+      if (token) adminSessions.delete(token);
+    }
+    res.setHeader('Set-Cookie', `${ADMIN_SESSION_COOKIE}=; HttpOnly; SameSite=Strict; Path=/; Max-Age=0`);
+    sendJson(res, 200, { ok: true });
+    return;
+  }
+
   if (url.pathname === '/api/state') {
+    if (!isAdminAuthenticated(req)) {
+      sendJson(res, 401, { error: 'Authentication required.' });
+      return;
+    }
     if (req.method === 'GET') {
       sendJson(res, 200, readState());
       return;
@@ -236,6 +293,35 @@ const server = http.createServer((req, res) => {
   }
 
   if (url.pathname === '/api/bookings') {
+    if (req.method === 'POST') {
+      parseRequestBody(req).then((booking) => {
+        if (!booking.name || !booking.email || !booking.phone || !booking.vehicle || !booking.package) {
+          sendJson(res, 400, { error: 'Name, email, phone, vehicle, and package are required.' });
+          return;
+        }
+        const current = readState();
+        const id = booking.id || `booking-${crypto.randomUUID()}`;
+        const existing = current.bookings.find((record) => record.id === id);
+        if (existing) {
+          sendJson(res, 200, existing);
+          return;
+        }
+        const created = {
+          ...booking,
+          id,
+          status: 'Pending',
+          created: new Date().toISOString(),
+          employeeId: null,
+          employeeName: '',
+        };
+        sendJson(res, 201, writeState({ ...current, bookings: [...current.bookings, created] }).bookings.at(-1));
+      }).catch((error) => sendJson(res, 400, { error: error.message }));
+      return;
+    }
+    if (!isAdminAuthenticated(req)) {
+      sendJson(res, 401, { error: 'Authentication required.' });
+      return;
+    }
     if (req.method === 'GET') {
       sendJson(res, 200, readState().bookings);
       return;
@@ -260,6 +346,10 @@ const server = http.createServer((req, res) => {
   }
 
   if (url.pathname === '/api/employees') {
+    if (!isAdminAuthenticated(req)) {
+      sendJson(res, 401, { error: 'Authentication required.' });
+      return;
+    }
     if (req.method === 'GET') {
       sendJson(res, 200, readState().employees);
       return;

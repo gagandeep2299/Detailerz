@@ -11,11 +11,19 @@ import { BUSINESS, SERVICE_LOCATIONS } from '../data/site';
 const EMPTY = { name: '', email: '', phone: '', vehicle: '', preferred_date: '', service_address: '', access_notes: '' };
 const field = 'mt-2 w-full border border-border bg-card px-4 py-3 text-sm outline-none transition-colors focus:border-accent';
 
+const getLocalDateValue = (date = new Date()) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+};
+
 export default function ContactPage() {
     const { items, total, count, removeItem, updateQty, clearBucket } = useBucket();
     const [form, setForm] = useState(EMPTY);
     const [status, setStatus] = useState('idle');
     const [error, setError] = useState('');
+    const today = getLocalDateValue();
 
     const set = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
 
@@ -23,6 +31,10 @@ export default function ContactPage() {
         e.preventDefault();
         if (!items.length) {
             setError('Add at least one service to your bucket before checkout.');
+            return;
+        }
+        if (form.preferred_date < today) {
+            setError('Choose today or a future date for your visit.');
             return;
         }
 
@@ -126,8 +138,15 @@ export default function ContactPage() {
                                                         </label>
                                                     )}
                                                     <p className="w-20 text-right font-display text-xl">${Number(item.price || 0) * Number(item.qty || 1)}</p>
-                                                    <button type="button" onClick={() => removeItem(item.id)} aria-label={`Remove ${item.name}`} className="border border-border p-2 text-muted-foreground hover:text-foreground">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => removeItem(item.id)}
+                                                        aria-label={`Remove ${item.kind === 'package' || item.kind === 'bundle' ? 'package' : 'item'}: ${item.name}`}
+                                                        title={`Remove ${item.kind === 'package' || item.kind === 'bundle' ? 'package' : 'item'}`}
+                                                        className="flex min-h-10 items-center gap-2 border border-border px-3 text-xs uppercase text-muted-foreground hover:text-foreground"
+                                                    >
                                                         <Trash2 className="h-4 w-4" />
+                                                        <span>Remove</span>
                                                     </button>
                                                 </div>
                                             </li>
@@ -156,7 +175,7 @@ export default function ContactPage() {
                                 </label>
                                 <label className="block">
                                     <span className="font-display text-lg uppercase">Preferred date</span>
-                                    <input required type="date" value={form.preferred_date} onChange={set('preferred_date')} className={field} />
+                                    <input required type="date" min={today} value={form.preferred_date} onChange={set('preferred_date')} className={field} />
                                 </label>
                                 <label className="block sm:col-span-2">
                                     <span className="font-display text-lg uppercase">Service address</span>

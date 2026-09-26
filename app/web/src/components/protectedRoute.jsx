@@ -7,8 +7,8 @@ const ProtectedRoute = ({ children, redirectTo = '/login', allowedRoles = [] }) 
 
     if (!isAuthed) return <Navigate to={redirectTo} replace />;
 
-    if (allowedRoles.length && user && !allowedRoles.includes(user.role)) {
-        return <Navigate to={user.role === 'employee' ? '/employee' : '/admin'} replace />;
+    if (allowedRoles.length && (!user || !allowedRoles.includes(user.role))) {
+        return <Navigate to={redirectTo} replace />;
     }
 
     return children;

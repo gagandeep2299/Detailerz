@@ -5,3 +5,8 @@ services:
     buildCommand: cd app && npm ci --include=dev && npm --prefix web ci --include=dev && npm run build
     startCommand: cd app && npm start
     healthCheckPath: /health
+    envVars:
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false

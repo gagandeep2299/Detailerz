@@ -1,5 +1,12 @@
 const STORAGE_KEY = 'detailerz-bookings';
 const EMPLOYEE_STORAGE_KEY = 'detailerz-employees';
+const DEMO_BOOKING_IDS = new Set([
+    'booking-001',
+    'booking-002',
+    'booking-003',
+    'booking-004',
+    'booking-91dd579c-2c53-49ab-a8f1-5b2e66b16506',
+]);
 const SHARED_SERVER_URL = '';
 const SHARED_SYNC_INTERVAL_MS = 2000;
 
@@ -118,89 +125,7 @@ const defaultEmployees = [
     },
 ];
 
-const defaultBookings = [
-    {
-        id: 'booking-001',
-        customerId: 'customer-4267118e',
-        name: 'Danielle Kwon',
-        email: 'danielle@example.com',
-        phone: '(602) 555-0188',
-        vehicle: 'Ram 1500',
-        package: 'Paint correction',
-        preferred_date: '2026-08-18',
-        status: 'Confirmed',
-        amount: 1240,
-        created: '2026-08-12T10:20:00Z',
-        employeeId: 'emp-101',
-        employeeName: 'Alex Martinez',
-        beforeImage: '/images/sample-before-1.jpg',
-        afterImage: '/images/sample-after-1.jpg',
-        feedback: null,
-        feedbackSent: false,
-    },
-    {
-        id: 'booking-002',
-        customerId: 'customer-11645796',
-        name: 'Peter Alvarado',
-        email: 'peter@example.com',
-        phone: '(602) 555-0161',
-        vehicle: 'Honda Pilot',
-        package: 'Interior deep clean',
-        preferred_date: '2026-08-19',
-        status: 'Pending',
-        amount: 240,
-        created: '2026-08-11T14:00:00Z',
-        employeeId: 'emp-101',
-        employeeName: 'Alex Martinez',
-        beforeImage: '/images/sample-before-2.jpg',
-        afterImage: '',
-        feedback: null,
-        feedbackSent: false,
-    },
-    {
-        id: 'booking-003',
-        customerId: 'customer-34d62214',
-        name: 'Rhiannon Blake',
-        email: 'rhiannon@example.com',
-        phone: '(602) 555-0129',
-        vehicle: 'Tesla Model 3',
-        package: '5-year ceramic',
-        preferred_date: '2026-08-24',
-        status: 'In progress',
-        amount: 1890,
-        created: '2026-08-12T09:00:00Z',
-        employeeId: 'emp-102',
-        employeeName: 'Jordan Lee',
-        beforeImage: '/images/sample-before-3.jpg',
-        afterImage: '/images/sample-after-3.jpg',
-        feedback: null,
-        feedbackSent: false,
-    },
-    {
-        id: 'booking-004',
-        customerId: 'customer-8f4f41bf',
-        name: 'Marcus Chen',
-        email: 'marcus@example.com',
-        phone: '(602) 555-0118',
-        vehicle: 'BMW M4',
-        package: 'Full detail',
-        preferred_date: '2026-08-21',
-        status: 'Completed',
-        amount: 690,
-        created: '2026-08-09T11:30:00Z',
-        employeeId: 'emp-102',
-        employeeName: 'Jordan Lee',
-        beforeImage: '/images/sample-before-4.jpg',
-        afterImage: '/images/sample-after-4.jpg',
-        feedback: {
-            rating: 5,
-            message: 'Excellent work and amazing finish. Great communication throughout the process.',
-            sentAt: '2026-08-15T10:00:00Z',
-            sent: true,
-        },
-        feedbackSent: true,
-    },
-];
+const defaultBookings = [];
 
 const listeners = new Set();
 
@@ -212,8 +137,8 @@ const readStoredBookings = () => {
         if (!raw) return reconcileCustomerIds(defaultBookings);
 
         const parsed = JSON.parse(raw);
-        const safeParsed = Array.isArray(parsed) && parsed.length ? parsed : defaultBookings;
-        return reconcileCustomerIds(safeParsed);
+        const safeParsed = Array.isArray(parsed) ? parsed : defaultBookings;
+        return reconcileCustomerIds(safeParsed.filter((booking) => !DEMO_BOOKING_IDS.has(booking.id)));
     } catch {
         return reconcileCustomerIds(defaultBookings);
     }
@@ -294,6 +219,7 @@ seedDefaultState();
 state.bookings = readStoredBookings();
 state.employees = readStoredEmployees();
 if (typeof window !== 'undefined') {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(state.bookings));
     refreshFromSharedServer();
     const sharedSyncTimer = window.setInterval(() => {
         refreshFromSharedServer();
@@ -630,6 +556,13 @@ export const inMemoryDb = {
         const normalized = normalizeBooking(input);
         state.bookings = reconcileCustomerIds([normalized, ...state.bookings]);
         persistAndSyncServer();
+        if (typeof window !== 'undefined') {
+            fetch('/api/bookings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(normalized),
+            }).catch(() => {});
+        }
         notify();
         return normalized;
     },
@@ -735,7 +668,7 @@ export const inMemoryDb = {
     },
 
     reset() {
-        state.bookings = reconcileCustomerIds([...defaultBookings]);
+        state.bookings = state.bookings.filter((booking) => !DEMO_BOOKING_IDS.has(booking.id));
         state.employees = [...defaultEmployees];
         persistAndSyncServer();
         notify();

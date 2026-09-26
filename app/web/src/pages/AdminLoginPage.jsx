@@ -5,7 +5,7 @@ import { useAuth } from '@/contexts/AuthContext';
 export default function AdminLoginPage() {
     const navigate = useNavigate();
     const { user, login, isAuthed } = useAuth();
-    const [form, setForm] = useState({ email: 'admin@akaaldetailerz.com', password: 'admin123' });
+    const [form, setForm] = useState({ email: '', password: '' });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
@@ -19,7 +19,7 @@ export default function AdminLoginPage() {
         setError('');
 
         try {
-            await login(form.email, form.password);
+            await login(form.email, form.password, 'admin');
             navigate('/admin');
         } catch (err) {
             setError(err?.message || 'Unable to sign in.');
@@ -44,7 +44,7 @@ export default function AdminLoginPage() {
                             value={form.email}
                             onChange={(event) => setForm((current) => ({ ...current, email: event.target.value }))}
                             className="w-full border border-border bg-background px-4 py-3 text-sm outline-none transition-colors focus:border-accent"
-                            placeholder="admin@akaaldetailerz.com"
+                            placeholder="name@example.com"
                             required
                         />
                     </label>
@@ -71,10 +71,6 @@ export default function AdminLoginPage() {
                         {loading ? 'Signing in...' : 'Login'}
                     </button>
                 </form>
-
-                <div className="mt-6 rounded border border-border bg-secondary p-3 text-xs text-muted-foreground">
-                    Demo credentials: admin@akaaldetailerz.com / admin123
-                </div>
             </div>
         </div>
     );
