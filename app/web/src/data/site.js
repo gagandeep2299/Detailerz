@@ -2,7 +2,7 @@ export const BUSINESS = {
     name: 'Akaal Detailerz Co.',
     tagline: 'Professional mobile detailing brought to your driveway, home, or workplace across Southwestern Ontario.',
     phone: '(705) 790-1054',
-    email: 'azaaldetailerz13@gmail.com',
+    email: 'akaaldetailerz13@gmail.com',
     address: 'Serving Kitchener, Cambridge, Guelph, Waterloo, Ayr, Woodstock, and Brantford',
     serviceArea: 'Kitchener, Cambridge, Guelph, Waterloo, Ayr, Woodstock, and Brantford, Ontario',
     hours: 'Mon–Fri 12pm–8pm · Sat–Sun 8am–8pm',

@@ -139,6 +139,13 @@ export default function AdminPage() {
                         >
                             Customers
                         </button>
+                        <button
+                            type="button"
+                            onClick={() => navigate('/admin/settings/email')}
+                            className="border border-white/15 bg-white/5 px-3 py-2 font-display text-xs uppercase transition hover:bg-white/10 sm:px-4 sm:text-sm"
+                        >
+                            Email settings
+                        </button>
                         <div className="hidden text-right sm:block">
                             <p className="text-xs uppercase tracking-[0.2em] text-primary-foreground/70">Signed in as</p>
                             <p className="font-display text-lg uppercase">{user?.name || 'Admin'}</p>

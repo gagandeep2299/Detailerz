@@ -552,19 +552,26 @@ export const inMemoryDb = {
         });
     },
 
-    addBooking(input = {}) {
+    async addBooking(input = {}) {
         const normalized = normalizeBooking(input);
-        state.bookings = reconcileCustomerIds([normalized, ...state.bookings]);
-        persistAndSyncServer();
-        if (typeof window !== 'undefined') {
-            fetch('/api/bookings', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(normalized),
-            }).catch(() => {});
+        const response = await fetch('/api/bookings', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(normalized),
+        });
+        const result = await response.json().catch(() => null);
+        if (!response.ok || !result) {
+            throw new Error(result?.error || 'The booking server did not return a valid response.');
         }
+
+        const createdBooking = normalizeBooking(result);
+        state.bookings = reconcileCustomerIds([
+            createdBooking,
+            ...state.bookings.filter((booking) => booking.id !== createdBooking.id),
+        ]);
+        persist();
         notify();
-        return normalized;
+        return { ...createdBooking, emailSent: result.emailSent };
     },
 
     updateBooking(id, updates = {}) {

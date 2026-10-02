@@ -5,7 +5,6 @@ import { CheckCircle2, Loader2, Trash2 } from 'lucide-react';
 import SiteLayout from '../components/SiteLayout.jsx';
 import { useBucket } from '../contexts/BucketContext';
 import inMemoryDb from '../lib/inMemoryDb';
-import { sendBookingSms } from '../lib/sms';
 import { BUSINESS, SERVICE_LOCATIONS } from '../data/site';
 
 const EMPTY = { name: '', email: '', phone: '', vehicle: '', preferred_date: '', service_address: '', access_notes: '' };
@@ -22,6 +21,7 @@ export default function ContactPage() {
     const { items, total, count, removeItem, updateQty, clearBucket } = useBucket();
     const [form, setForm] = useState(EMPTY);
     const [status, setStatus] = useState('idle');
+    const [mailStatus, setMailStatus] = useState('unknown');
     const [error, setError] = useState('');
     const today = getLocalDateValue();
 
@@ -50,20 +50,15 @@ export default function ContactPage() {
             .join(', ');
 
         try {
-            const createdBooking = inMemoryDb.addBooking({
+            const createdBooking = await inMemoryDb.addBooking({
                 ...form,
                 package: packageLabel,
                 amount: total,
                 status: 'Pending',
             });
 
-            await sendBookingSms({
-                toPhone: createdBooking.phone,
-                customerName: createdBooking.name,
-                serviceName: packageLabel,
-            });
-
             clearBucket();
+            setMailStatus(createdBooking.emailSent === true ? 'sent' : createdBooking.emailSent === false ? 'failed' : 'unknown');
             setStatus('done');
             setForm(EMPTY);
         } catch (err) {
@@ -93,7 +88,13 @@ export default function ContactPage() {
                         <div className="flex flex-col items-start gap-3 border border-accent bg-accent/10 p-8">
                             <CheckCircle2 className="h-8 w-8 text-accent-foreground" />
                             <h2 className="font-display text-3xl uppercase">Request received</h2>
-                            <p className="text-muted-foreground">Thanks — we have your details and selected services, and will be in touch within one business day. Need it sooner? Call {BUSINESS.phone}.</p>
+                            <p className="text-muted-foreground">
+                                {mailStatus === 'sent'
+                                    ? `Thanks — we received your request and sent the notification email. We will be in touch within one business day. Need it sooner? Call ${BUSINESS.phone}.`
+                                    : mailStatus === 'failed'
+                                        ? `Your request was saved, but we could not send its notification email. Please call ${BUSINESS.phone} to make sure we see it.`
+                                        : `Your request was saved, but the server could not confirm the notification email. Please call ${BUSINESS.phone} to make sure we see it.`}
+                            </p>
                             <Link to="/services" className="mt-2 flex min-h-[44px] items-center bg-primary px-6 font-display text-lg uppercase text-primary-foreground">
                                 Add more services
                             </Link>
