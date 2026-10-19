@@ -16,6 +16,7 @@ const defaultState = {
   enquiries: [],
   bookings: [],
   pageViews: {},
+  pageViewEvents: [],
   catalog: null,
   settings: { smtp: {} },
   employees: [
@@ -113,6 +114,7 @@ const readState = () => {
       pageViews: parsed.pageViews && typeof parsed.pageViews === 'object' && !Array.isArray(parsed.pageViews)
         ? parsed.pageViews
         : defaultState.pageViews,
+      pageViewEvents: Array.isArray(parsed.pageViewEvents) ? parsed.pageViewEvents : defaultState.pageViewEvents,
       employees: Array.isArray(parsed.employees) ? parsed.employees : defaultState.employees,
       catalog: parsed.catalog && typeof parsed.catalog === 'object' ? parsed.catalog : defaultState.catalog,
       settings: parsed.settings && typeof parsed.settings === 'object' ? parsed.settings : defaultState.settings,
@@ -139,6 +141,9 @@ const writeState = (nextState) => {
     pageViews: nextState?.pageViews && typeof nextState.pageViews === 'object' && !Array.isArray(nextState.pageViews)
       ? nextState.pageViews
       : current.pageViews || defaultState.pageViews,
+    pageViewEvents: Array.isArray(nextState?.pageViewEvents)
+      ? nextState.pageViewEvents
+      : current.pageViewEvents || defaultState.pageViewEvents,
     employees: Array.isArray(nextState?.employees) ? nextState.employees : defaultState.employees,
     catalog: nextState?.catalog && typeof nextState.catalog === 'object'
       ? nextState.catalog
@@ -351,7 +356,13 @@ const server = http.createServer((req, res) => {
       const current = readState();
       const pageViews = { ...current.pageViews };
       pageViews[pagePath] = (Number(pageViews[pagePath]) || 0) + 1;
-      writeState({ ...current, pageViews });
+      const today = new Date();
+      today.setUTCHours(0, 0, 0, 0);
+      today.setUTCDate(today.getUTCDate() - 6);
+      const pageViewEvents = current.pageViewEvents
+        .filter((event) => Date.parse(event.timestamp) >= today.getTime());
+      pageViewEvents.push({ path: pagePath, timestamp: new Date().toISOString() });
+      writeState({ ...current, pageViews, pageViewEvents });
       sendJson(res, 202, { ok: true });
     }).catch((error) => sendJson(res, 400, { error: error.message }));
     return;
@@ -362,14 +373,33 @@ const server = http.createServer((req, res) => {
       sendJson(res, 401, { error: 'Authentication required.' });
       return;
     }
-    const pageViews = readState().pageViews;
+    const now = new Date();
+    const startDate = new Date(now);
+    startDate.setUTCHours(0, 0, 0, 0);
+    startDate.setUTCDate(startDate.getUTCDate() - 6);
+    const days = Array.from({ length: 7 }, (_, index) => {
+      const date = new Date(startDate);
+      date.setUTCDate(date.getUTCDate() + index);
+      return { date: date.toISOString().slice(0, 10), visits: 0 };
+    });
+    const dailyVisits = new Map(days.map((day) => [day.date, day]));
+    const pageViews = new Map(PAGE_VIEW_PATHS.map((pagePath) => [pagePath, 0]));
+    readState().pageViewEvents.forEach((event) => {
+      const date = String(event.timestamp || '').slice(0, 10);
+      const day = dailyVisits.get(date);
+      if (!day || !pageViews.has(event.path)) return;
+      day.visits += 1;
+      pageViews.set(event.path, pageViews.get(event.path) + 1);
+    });
     const pages = PAGE_VIEW_PATHS.map((pagePath) => ({
       path: pagePath,
-      visits: Number(pageViews[pagePath]) || 0,
+      visits: pageViews.get(pagePath),
     })).sort((first, second) => second.visits - first.visits || first.path.localeCompare(second.path));
+    const totalVisits = days.reduce((total, day) => total + day.visits, 0);
     sendJson(res, 200, {
-      totalVisits: pages.reduce((total, page) => total + page.visits, 0),
+      totalVisits,
       pages,
+      days,
     });
     return;
   }

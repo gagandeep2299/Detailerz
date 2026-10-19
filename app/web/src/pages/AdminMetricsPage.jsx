@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, BarChart3, Eye, LogOut } from 'lucide-react';
+import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function AdminMetricsPage() {
     const navigate = useNavigate();
     const { user, logout } = useAuth();
-    const [metrics, setMetrics] = useState({ totalVisits: 0, pages: [] });
+    const [metrics, setMetrics] = useState({ totalVisits: 0, pages: [], days: [] });
     const [updatedAt, setUpdatedAt] = useState(null);
     const [loadFailed, setLoadFailed] = useState(false);
 
@@ -77,7 +78,7 @@ export default function AdminMetricsPage() {
                 <section className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_2fr]">
                     <div className="flex items-center justify-between gap-4 border border-border bg-card p-5">
                         <div>
-                            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Total page visits</p>
+                            <p className="text-xs uppercase tracking-[0.2em] text-muted-foreground">Visits in the last 7 days</p>
                             <p className="mt-3 font-display text-4xl">{metrics.totalVisits.toLocaleString()}</p>
                         </div>
                         <div className="flex h-11 w-11 items-center justify-center border border-accent/30 bg-accent/10 text-accent">
@@ -87,7 +88,7 @@ export default function AdminMetricsPage() {
                     <div className="flex items-center justify-between gap-4 border border-border bg-card p-5">
                         <div>
                             <p className="font-display text-sm uppercase tracking-[0.25em] text-muted-foreground">Customer traffic</p>
-                            <h2 className="mt-2 font-display text-2xl uppercase">Visits by page</h2>
+                            <h2 className="mt-2 font-display text-2xl uppercase">Daily visits</h2>
                             <p className="mt-2 text-xs text-muted-foreground">
                                 {loadFailed ? 'Unable to refresh metrics.' : updatedAt ? `Updated ${updatedAt.toLocaleTimeString()}` : 'Loading metrics...'}
                                 {!loadFailed && ' · Auto-refreshes every 10 seconds'}
@@ -97,9 +98,47 @@ export default function AdminMetricsPage() {
                     </div>
                 </section>
 
+                <section className="border border-border bg-card p-4 sm:p-6">
+                    <div className="mb-5 flex flex-wrap items-end justify-between gap-3">
+                        <div>
+                            <h2 className="font-display text-xl uppercase">Visit trend</h2>
+                            <p className="mt-1 text-xs text-muted-foreground">Daily page views, last 7 days</p>
+                        </div>
+                        <span className="text-xs uppercase tracking-[0.15em] text-muted-foreground">Date in UTC · Visits</span>
+                    </div>
+                    <div className="h-[260px] w-full" role="img" aria-label="Line graph of page visits by day for the last seven days">
+                        <ResponsiveContainer width="100%" height="100%">
+                            <LineChart data={metrics.days} margin={{ top: 8, right: 12, bottom: 4, left: -16 }}>
+                                <CartesianGrid stroke="hsl(var(--border))" strokeDasharray="3 3" vertical={false} />
+                                <XAxis
+                                    dataKey="date"
+                                    tickFormatter={(date) => new Date(`${date}T00:00:00Z`).toLocaleDateString(undefined, { month: 'short', day: 'numeric', timeZone: 'UTC' })}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                                    minTickGap={12}
+                                />
+                                <YAxis
+                                    allowDecimals={false}
+                                    width={36}
+                                    tickLine={false}
+                                    axisLine={false}
+                                    tick={{ fill: 'hsl(var(--muted-foreground))', fontSize: 11 }}
+                                />
+                                <Tooltip
+                                    labelFormatter={(date) => new Date(`${date}T00:00:00Z`).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', timeZone: 'UTC' })}
+                                    formatter={(value) => [value, 'Visits']}
+                                    contentStyle={{ borderColor: 'hsl(var(--border))', borderRadius: 0, backgroundColor: 'hsl(var(--card))' }}
+                                />
+                                <Line type="monotone" dataKey="visits" stroke="hsl(var(--accent))" strokeWidth={3} dot={{ r: 4, fill: 'hsl(var(--accent))' }} activeDot={{ r: 6 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+                </section>
+
                 <section className="border border-border bg-card">
                     <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-4 border-b border-border bg-secondary px-4 py-3 text-xs uppercase tracking-[0.18em] text-muted-foreground sm:px-6">
-                        <span>Page</span>
+                        <span>Page · Last 7 days</span>
                         <span className="text-right">Visits</span>
                     </div>
                     <div className="divide-y divide-border">
