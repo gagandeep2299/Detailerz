@@ -26,7 +26,6 @@ export default function AdminPage() {
     const [employeeOptions, setEmployeeOptions] = useState(() => inMemoryDb.getEmployees());
     const [loading, setLoading] = useState(false);
     const [selectedBookingImages, setSelectedBookingImages] = useState(null);
-
     useEffect(() => {
         setLoading(true);
 
@@ -125,6 +124,13 @@ export default function AdminPage() {
                     </div>
 
                     <div className="flex w-full flex-wrap items-center gap-2 sm:gap-4 lg:w-auto">
+                        <button
+                            type="button"
+                            onClick={() => navigate('/admin/metrics')}
+                            className="border border-white/15 bg-white/5 px-3 py-2 font-display text-xs uppercase transition hover:bg-white/10 sm:px-4 sm:text-sm"
+                        >
+                            Page visits
+                        </button>
                         <button
                             type="button"
                             onClick={() => navigate('/admin/employees')}

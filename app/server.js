@@ -15,6 +15,7 @@ const WEB_DIR = path.join(__dirname, 'web', 'dist');
 const defaultState = {
   enquiries: [],
   bookings: [],
+  pageViews: {},
   catalog: null,
   settings: { smtp: {} },
   employees: [
@@ -48,6 +49,7 @@ const ADMIN_SESSION_COOKIE = 'detailerz_admin_session';
 const ADMIN_SESSION_TTL_MS = 8 * 60 * 60 * 1000;
 const adminSessions = new Map();
 const failedAdminLogins = new Map();
+const PAGE_VIEW_PATHS = ['/', '/services', '/gallery', '/about', '/contact', '/marketing', '/video'];
 
 const getAdminSession = (req) => {
   const cookie = String(req.headers.cookie || '').split(';').map((part) => part.trim());
@@ -108,6 +110,9 @@ const readState = () => {
         ? parsed.bookings.filter((booking) => !DEMO_BOOKING_IDS.has(booking.id))
         : defaultState.bookings,
       enquiries: Array.isArray(parsed.enquiries) ? parsed.enquiries : defaultState.enquiries,
+      pageViews: parsed.pageViews && typeof parsed.pageViews === 'object' && !Array.isArray(parsed.pageViews)
+        ? parsed.pageViews
+        : defaultState.pageViews,
       employees: Array.isArray(parsed.employees) ? parsed.employees : defaultState.employees,
       catalog: parsed.catalog && typeof parsed.catalog === 'object' ? parsed.catalog : defaultState.catalog,
       settings: parsed.settings && typeof parsed.settings === 'object' ? parsed.settings : defaultState.settings,
@@ -131,6 +136,9 @@ const writeState = (nextState) => {
     bookings: Array.isArray(nextState?.bookings)
       ? nextState.bookings.filter((booking) => !DEMO_BOOKING_IDS.has(booking.id))
       : defaultState.bookings,
+    pageViews: nextState?.pageViews && typeof nextState.pageViews === 'object' && !Array.isArray(nextState.pageViews)
+      ? nextState.pageViews
+      : current.pageViews || defaultState.pageViews,
     employees: Array.isArray(nextState?.employees) ? nextState.employees : defaultState.employees,
     catalog: nextState?.catalog && typeof nextState.catalog === 'object'
       ? nextState.catalog
@@ -330,6 +338,39 @@ const server = http.createServer((req, res) => {
     sendJson(res, session ? 200 : 401, session ? {
       user: { id: 'admin', email: session.email, name: 'Akaal Detailerz Admin', role: 'admin' },
     } : { error: 'Not signed in.' });
+    return;
+  }
+
+  if (url.pathname === '/api/metrics/page-view' && req.method === 'POST') {
+    parseRequestBody(req).then(({ path: requestedPath }) => {
+      const pagePath = String(requestedPath || '').split('?')[0];
+      if (!PAGE_VIEW_PATHS.includes(pagePath)) {
+        sendJson(res, 400, { error: 'Page path is invalid.' });
+        return;
+      }
+      const current = readState();
+      const pageViews = { ...current.pageViews };
+      pageViews[pagePath] = (Number(pageViews[pagePath]) || 0) + 1;
+      writeState({ ...current, pageViews });
+      sendJson(res, 202, { ok: true });
+    }).catch((error) => sendJson(res, 400, { error: error.message }));
+    return;
+  }
+
+  if (url.pathname === '/api/admin/metrics' && req.method === 'GET') {
+    if (!isAdminAuthenticated(req)) {
+      sendJson(res, 401, { error: 'Authentication required.' });
+      return;
+    }
+    const pageViews = readState().pageViews;
+    const pages = PAGE_VIEW_PATHS.map((pagePath) => ({
+      path: pagePath,
+      visits: Number(pageViews[pagePath]) || 0,
+    })).sort((first, second) => second.visits - first.visits || first.path.localeCompare(second.path));
+    sendJson(res, 200, {
+      totalVisits: pages.reduce((total, page) => total + page.visits, 0),
+      pages,
+    });
     return;
   }
 

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Route, Routes, BrowserRouter as Router } from 'react-router-dom';
 import ScrollToTop from './components/ScrollToTop';
+import PageViewTracker from './components/PageViewTracker';
 import { ProtectedRoute } from './components/protectedRoute';
 import HomePage from './pages/HomePage';
 import ServicesPage from './pages/ServicePage';
@@ -10,6 +11,7 @@ import ContactPage from './pages/ContactPage';
 import MarketingPage from './pages/MarketingPage';
 import AdminLoginPage from './pages/AdminLoginPage';
 import AdminPage from './pages/AdminPage';
+import AdminMetricsPage from './pages/AdminMetricsPage';
 import AdminGalleryPage from './pages/AdminGalleryPage';
 import AdminEmployeesPage from './pages/AdminEmployeesPage';
 import AdminEmailSettingsPage from './pages/AdminEmailSettingsPage';
@@ -22,6 +24,7 @@ function App() {
     return (
         <Router>
             <ScrollToTop />
+            <PageViewTracker />
             <Routes>
                 <Route path="/" element={<HomePage />} />
                 <Route path="/services" element={<ServicesPage />} />
@@ -45,6 +48,14 @@ function App() {
                     element={
                         <ProtectedRoute allowedRoles={['admin']} redirectTo="/admin/login">
                             <AdminGalleryPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin/metrics"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin']} redirectTo="/admin/login">
+                            <AdminMetricsPage />
                         </ProtectedRoute>
                     }
                 />
