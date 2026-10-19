@@ -13,6 +13,7 @@ import AdminPage from './pages/AdminPage';
 import AdminGalleryPage from './pages/AdminGalleryPage';
 import AdminEmployeesPage from './pages/AdminEmployeesPage';
 import AdminEmailSettingsPage from './pages/AdminEmailSettingsPage';
+import AdminServicesPage from './pages/AdminServicesPage';
 import CustomerPage from './pages/CustomerPage';
 import EmployeeLoginPage from './pages/EmployeeLoginPage';
 import EmployeePage from './pages/EmployeePage';
@@ -44,6 +45,14 @@ function App() {
                     element={
                         <ProtectedRoute allowedRoles={['admin']} redirectTo="/admin/login">
                             <AdminGalleryPage />
+                        </ProtectedRoute>
+                    }
+                />
+                <Route
+                    path="/admin/services"
+                    element={
+                        <ProtectedRoute allowedRoles={['admin']} redirectTo="/admin/login">
+                            <AdminServicesPage />
                         </ProtectedRoute>
                     }
                 />

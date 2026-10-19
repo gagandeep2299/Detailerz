@@ -9,7 +9,8 @@ import MarketingVideoPlayer from '../components/MarketingVideoPlayer';
 import AddToBucketButton from '../components/AddToBucketButton';
 import EnquiryDialog from '../components/EnquiryDialog';
 import { makeBucketItem, useBucket } from '../contexts/BucketContext';
-import { BUSINESS, EXTERIOR_VEHICLE_TYPES, IMAGES, PACKAGES, VISIBLE_SERVICES, SERVICE_ADDONS, SERVICE_PACKAGES, TESTIMONIALS, SHOW_BUNDLED_PACKAGES } from '../data/site';
+import { BUSINESS, EXTERIOR_VEHICLE_TYPES, IMAGES, PACKAGES, TESTIMONIALS, SHOW_BUNDLED_PACKAGES } from '../data/site';
+import { useServiceCatalog } from '../lib/serviceCatalog';
 const serviceIcons = {
     cabin: Armchair,
     exterior: CarFront,
@@ -40,6 +41,7 @@ function Ticker() {
         </div>;
 }
 export default function HomePage() {
+    const { services, servicePackages: SERVICE_PACKAGES, serviceAddons: SERVICE_ADDONS } = useServiceCatalog();
     const [selectedService, setSelectedService] = useState(null);
     const [vehicleType, setVehicleType] = useState(EXTERIOR_VEHICLE_TYPES[0].value);
     const [enquiryOpen, setEnquiryOpen] = useState(false);
@@ -165,7 +167,7 @@ export default function HomePage() {
                         <h2 className="font-display text-4xl uppercase sm:text-5xl">Services & pricing</h2>
                     </Reveal>
                     <div className="mt-10 grid gap-x-8 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
-                        {VISIBLE_SERVICES.map((s, i) => <Reveal key={s.name} delay={i * 0.05}>
+                        {services.map((s, i) => <Reveal key={s.name} delay={i * 0.05}>
                             <button type="button" onClick={() => { setSelectedService(s); setVehicleType(EXTERIOR_VEHICLE_TYPES[0].value); }} className="flex h-full w-full flex-col items-center text-center transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
                                     {(() => {
                                       const Icon = serviceIcons[s.icon];

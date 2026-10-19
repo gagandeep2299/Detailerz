@@ -134,6 +134,13 @@ export default function AdminPage() {
                         </button>
                         <button
                             type="button"
+                            onClick={() => navigate('/admin/services')}
+                            className="border border-white/15 bg-white/5 px-3 py-2 font-display text-xs uppercase transition hover:bg-white/10 sm:px-4 sm:text-sm"
+                        >
+                            Services & pricing
+                        </button>
+                        <button
+                            type="button"
                             onClick={() => navigate('/admin/customers')}
                             className="border border-white/15 bg-white/5 px-3 py-2 font-display text-xs uppercase transition hover:bg-white/10 sm:px-4 sm:text-sm"
                         >

@@ -15,6 +15,7 @@ const WEB_DIR = path.join(__dirname, 'web', 'dist');
 const defaultState = {
   enquiries: [],
   bookings: [],
+  catalog: null,
   settings: { smtp: {} },
   employees: [
     {
@@ -108,6 +109,7 @@ const readState = () => {
         : defaultState.bookings,
       enquiries: Array.isArray(parsed.enquiries) ? parsed.enquiries : defaultState.enquiries,
       employees: Array.isArray(parsed.employees) ? parsed.employees : defaultState.employees,
+      catalog: parsed.catalog && typeof parsed.catalog === 'object' ? parsed.catalog : defaultState.catalog,
       settings: parsed.settings && typeof parsed.settings === 'object' ? parsed.settings : defaultState.settings,
     };
   } catch {
@@ -130,6 +132,9 @@ const writeState = (nextState) => {
       ? nextState.bookings.filter((booking) => !DEMO_BOOKING_IDS.has(booking.id))
       : defaultState.bookings,
     employees: Array.isArray(nextState?.employees) ? nextState.employees : defaultState.employees,
+    catalog: nextState?.catalog && typeof nextState.catalog === 'object'
+      ? nextState.catalog
+      : current.catalog || defaultState.catalog,
     settings: nextState?.settings && typeof nextState.settings === 'object'
       ? nextState.settings
       : current.settings || defaultState.settings,
@@ -283,6 +288,37 @@ const server = http.createServer((req, res) => {
   }
 
   const url = new URL(req.url, 'http://localhost');
+
+  if (url.pathname === '/api/services' && req.method === 'GET') {
+    sendJson(res, 200, { catalog: readState().catalog });
+    return;
+  }
+
+  if (url.pathname === '/api/admin/services' && (req.method === 'GET' || req.method === 'PUT')) {
+    if (!isAdminAuthenticated(req)) {
+      sendJson(res, 401, { error: 'Authentication required.' });
+      return;
+    }
+    if (req.method === 'GET') {
+      sendJson(res, 200, { catalog: readState().catalog });
+      return;
+    }
+    parseRequestBody(req).then((catalog) => {
+      const validCatalog = catalog && Array.isArray(catalog.services)
+        && catalog.services.every((service) => service && typeof service.name === 'string'
+          && service.name.trim() && Number.isFinite(Number(service.price)) && Number(service.price) >= 0)
+        && catalog.servicePackages && typeof catalog.servicePackages === 'object'
+        && catalog.serviceAddons && typeof catalog.serviceAddons === 'object';
+      if (!validCatalog) {
+        sendJson(res, 400, { error: 'Service catalog is invalid.' });
+        return;
+      }
+      const current = readState();
+      writeState({ ...current, catalog });
+      sendJson(res, 200, { catalog });
+    }).catch((error) => sendJson(res, 400, { error: error.message }));
+    return;
+  }
 
   if (url.pathname === '/health') {
     sendJson(res, 200, { status: 'ok' });

@@ -7,7 +7,8 @@ import EnquiryDialog from '@/components/EnquiryDialog';
 import Reveal from '@/components/Reveal';
 import SiteLayout from '@/components/SiteLayout';
 import { makeBucketItem, useBucket } from '@/contexts/BucketContext';
-import { EXTERIOR_VEHICLE_TYPES, PACKAGES, VISIBLE_SERVICES, SERVICE_ADDONS, SERVICE_PACKAGES, SHOW_BUNDLED_PACKAGES } from '@/data/site';
+import { EXTERIOR_VEHICLE_TYPES, PACKAGES, SHOW_BUNDLED_PACKAGES } from '@/data/site';
+import { useServiceCatalog } from '@/lib/serviceCatalog';
 
 const serviceIcons = {
     cabin: Armchair,
@@ -29,6 +30,7 @@ const addonIcons = {
 };
 
 export default function ServicesPage() {
+    const { services, servicePackages: SERVICE_PACKAGES, serviceAddons: SERVICE_ADDONS } = useServiceCatalog();
     const [selectedService, setSelectedService] = useState(null);
     const [vehicleType, setVehicleType] = useState(EXTERIOR_VEHICLE_TYPES[0].value);
     const [enquiryOpen, setEnquiryOpen] = useState(false);
@@ -67,7 +69,7 @@ export default function ServicesPage() {
 
             <section className="mx-auto max-w-[78rem] px-5 pb-20 md:pb-28">
                 <div className="grid gap-x-10 gap-y-16 sm:grid-cols-2 lg:grid-cols-4">
-                    {VISIBLE_SERVICES.map((s, i) => (
+                    {services.map((s, i) => (
                         <Reveal key={s.name} delay={(i % 2) * 0.06}>
                             <button type="button" onClick={() => { setSelectedService(s); setVehicleType(EXTERIOR_VEHICLE_TYPES[0].value); }} className="flex h-full w-full flex-col items-center text-center transition-transform hover:-translate-y-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent">
                                 {(() => {
