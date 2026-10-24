@@ -3,4 +3,4 @@ Allow: /
 Disallow: /admin
 Disallow: /employee
 
-Sitemap: https://akaaldetailerz.com/sitemap.xml
+Sitemap: https://akaaldetailerz.ca/sitemap.xml
